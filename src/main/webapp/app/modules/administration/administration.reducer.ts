@@ -17,6 +17,9 @@ const initialState = {
     configProps: {} as any,
     env: {} as any,
   },
+  tracker: {
+    activities: [],
+  },
   totalItems: 0,
 };
 
@@ -72,7 +75,15 @@ export const getEnv = createAsyncThunk('administration/fetch_env', async () => a
 export const AdministrationSlice = createSlice({
   name: 'administration',
   initialState: initialState as AdministrationState,
-  reducers: {},
+  reducers: {
+    websocketActivityMessage(state, action) {
+      // filter out activities from the same session
+      const uniqueActivities = state.tracker.activities.filter(activity => activity.sessionId !== action.payload.sessionId);
+      // remove any activities with the page of logout
+      const activities = [...uniqueActivities, action.payload].filter(activity => activity.page !== 'logout');
+      state.tracker = { activities };
+    },
+  },
   extraReducers(builder) {
     builder
       .addCase(getSystemHealth.fulfilled, (state, action) => {
@@ -120,6 +131,8 @@ export const AdministrationSlice = createSlice({
       );
   },
 });
+
+export const { websocketActivityMessage } = AdministrationSlice.actions;
 
 // Reducer
 export default AdministrationSlice.reducer;
