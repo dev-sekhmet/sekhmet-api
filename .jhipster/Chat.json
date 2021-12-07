@@ -1,0 +1,39 @@
+{
+  "fields": [
+    {
+      "fieldName": "guid",
+      "fieldType": "UUID",
+      "fieldValidateRules": ["required", "unique"]
+    },
+    {
+      "fieldName": "icon",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+
+    {
+      "relationshipName": "messages",
+      "otherEntityName": "message",
+      "relationshipType": "one-to-many",
+      "otherEntityRelationshipName": "chat",
+      "otherEntity": "[Message Entity]",
+      "otherEntityField": "id",
+      "ownerSide": false,
+      "collection": true,
+      "otherSideReferenceExists": false,
+      "otherEntityIsEmbedded": false
+    }
+  ],
+  "service": "serviceClass",
+  "dto": "no",
+  "jpaMetamodelFiltering": false,
+  "readOnly": false,
+  "pagination": "pagination",
+  "name": "Chat",
+  "changelogDate": "20211207191310"
+}

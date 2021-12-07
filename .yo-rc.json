@@ -13,7 +13,7 @@
     "blueprints": [],
     "otherModules": [],
     "pages": [],
-    "creationTimestamp": 1638900779318,
+    "creationTimestamp": 1638903514991,
     "serviceDiscoveryType": "no",
     "reactive": true,
     "authenticationType": "jwt",
@@ -22,7 +22,7 @@
     "cacheProvider": "no",
     "enableHibernateCache": false,
     "databaseType": "sql",
-    "devDatabaseType": "h2Disk",
+    "devDatabaseType": "postgresql",
     "prodDatabaseType": "postgresql",
     "buildTool": "maven",
     "serverSideOptions": [],
@@ -35,11 +35,13 @@
     "clientTheme": "none",
     "enableTranslation": true,
     "nativeLanguage": "en",
-    "jwtSecretKey": "OTkwMzlhZWM5ZGFiYjE3ZTMyMmJhNjk5OWNhZmY4ODllYWVhM2I2NjFjZTBiOTUyMDlhZGZlYTJkNTZkNjYxMGEwMWMyYzc1NmFmNWNhYjQ3NGUxNmE0NjJjNzY5MTc3MTJjMTVjYWFhOTYzOTA0OThlNDkwMzhhYmU4ZWEyNTM=",
+    "jwtSecretKey": "YzczZTVhY2Y1MmU3MzQxYjk5ZDUzNmQ3Y2IyOGUxOTcxNTlmZWEwYTNmZDcwMzg3MWNlMjE4YTM3YjkzMDA3YTZkMmYwOGE4OTk5ZDBiZWVkY2UzODA4NzgzNTdhMzJjYWJjODIzZDYyYTdmYTNhN2ZjZGNlOWQ2MzQ1NGRlOWU=",
     "devServerPort": 9060,
     "clientPackageManager": "npm",
     "clientThemeVariant": "",
     "languages": ["en", "fr"],
-    "enableGradleEnterprise": false
+    "enableGradleEnterprise": false,
+    "lastLiquibaseTimestamp": 1638904998000,
+    "entities": ["Chat", "Message", "ChatMember"]
   }
 }

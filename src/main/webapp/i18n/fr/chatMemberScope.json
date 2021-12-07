@@ -1,0 +1,9 @@
+{
+  "sekhmetApp": {
+    "ChatMemberScope": {
+      "null": "",
+      "PARTICIPANT": "PARTICIPANT",
+      "ADMIN": "ADMIN"
+    }
+  }
+}

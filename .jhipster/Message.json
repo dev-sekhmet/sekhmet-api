@@ -1,0 +1,50 @@
+{
+  "fields": [
+    {
+      "fieldName": "uid",
+      "fieldType": "UUID",
+      "fieldValidateRules": ["required", "unique"]
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "image",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "video",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "audio",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "system",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "sent",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "received",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "pending",
+      "fieldType": "Boolean"
+    }
+  ],
+  "relationships": [],
+  "service": "serviceClass",
+  "dto": "no",
+  "jpaMetamodelFiltering": false,
+  "readOnly": false,
+  "pagination": "pagination",
+  "name": "Message",
+  "changelogDate": "20211207191934"
+}

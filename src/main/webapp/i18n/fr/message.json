@@ -1,0 +1,32 @@
+{
+  "sekhmetApp": {
+    "message": {
+      "home": {
+        "title": "Messages",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Message",
+        "createOrEditLabel": "Créer ou éditer un Message",
+        "notFound": "Aucun Message trouvé"
+      },
+      "created": "Un nouveau Message a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Message avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Message avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Etes-vous certain de vouloir supprimer le Message {{ id }} ?"
+      },
+      "detail": {
+        "title": "Message"
+      },
+      "id": "ID",
+      "uid": "Uid",
+      "createdAt": "Created At",
+      "image": "Image",
+      "video": "Video",
+      "audio": "Audio",
+      "system": "System",
+      "sent": "Sent",
+      "received": "Received",
+      "pending": "Pending"
+    }
+  }
+}

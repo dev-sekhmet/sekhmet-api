@@ -1,0 +1,25 @@
+{
+  "sekhmetApp": {
+    "chatMember": {
+      "home": {
+        "title": "ChatMembers",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Chat Member",
+        "createOrEditLabel": "Créer ou éditer un Chat Member",
+        "notFound": "Aucun Chat Member trouvé"
+      },
+      "created": "Un nouveau Chat Member a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Chat Member avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Chat Member avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Etes-vous certain de vouloir supprimer le Chat Member {{ id }} ?"
+      },
+      "detail": {
+        "title": "Chat Member"
+      },
+      "id": "ID",
+      "uid": "Uid",
+      "scope": "Scope"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "fields": [
+    {
+      "fieldName": "uid",
+      "fieldType": "UUID",
+      "fieldValidateRules": ["required", "unique"]
+    },
+    {
+      "fieldName": "scope",
+      "fieldType": "ChatMemberScope",
+      "fieldValues": "PARTICIPANT,ADMIN"
+    }
+  ],
+  "relationships": [],
+  "service": "serviceClass",
+  "dto": "no",
+  "jpaMetamodelFiltering": false,
+  "readOnly": false,
+  "pagination": "no",
+  "name": "ChatMember",
+  "changelogDate": "20211207192318"
+}
