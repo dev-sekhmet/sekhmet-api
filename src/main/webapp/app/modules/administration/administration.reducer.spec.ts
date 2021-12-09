@@ -12,7 +12,6 @@ import administration, {
   getConfigurations,
   getEnv,
   setLoggers,
-  websocketActivityMessage,
 } from './administration.reducer';
 
 describe('Administration reducer tests', () => {
@@ -31,7 +30,6 @@ describe('Administration reducer tests', () => {
     });
     expect(isEmpty(state.logs.loggers));
     expect(isEmpty(state.threadDump));
-    expect(isEmpty(state.tracker.activities));
   }
 
   function testMultipleTypes(types, payload, testFunction, error?) {
@@ -165,40 +163,6 @@ describe('Administration reducer tests', () => {
           configProps: {},
           env: payload.data,
         },
-      });
-    });
-  });
-  describe('Websocket Message Handling', () => {
-    const username = process.env.E2E_USERNAME ?? 'admin';
-
-    it('should update state according to a successful websocket message receipt', () => {
-      const payload = { id: 1, userLogin: username, page: 'home', sessionId: 'abc123' };
-      const toTest = administration(undefined, websocketActivityMessage(payload));
-
-      expect(toTest).toMatchObject({
-        tracker: { activities: [payload] },
-      });
-    });
-
-    it('should update state according to a successful websocket message receipt - only one activity per session', () => {
-      const firstPayload = { id: 1, userLogin: username, page: 'home', sessionId: 'abc123' };
-      const secondPayload = { id: 1, userLogin: username, page: 'user-management', sessionId: 'abc123' };
-      const firstState = administration(undefined, websocketActivityMessage(firstPayload));
-      const secondState = administration(firstState, websocketActivityMessage(secondPayload));
-
-      expect(secondState).toMatchObject({
-        tracker: { activities: [secondPayload] },
-      });
-    });
-
-    it('should update state according to a successful websocket message receipt - remove logged out sessions', () => {
-      const firstPayload = { id: 1, userLogin: username, page: 'home', sessionId: 'abc123' };
-      const secondPayload = { id: 1, userLogin: username, page: 'logout', sessionId: 'abc123' };
-      const firstState = administration(undefined, websocketActivityMessage(firstPayload));
-      const secondState = administration(firstState, websocketActivityMessage(secondPayload));
-
-      expect(secondState).toMatchObject({
-        tracker: { activities: [] },
       });
     });
   });
