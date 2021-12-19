@@ -30,6 +30,12 @@
             <url>https://sekhmet.jfrog.io/artifactory/sekhmet-api-libs-release/</url>
         </repository>
     </distributionManagement>
+
+    <scm>
+        <connection>scm:git:https://github.com/dev-sekhmet/sekhmet-api.git</connection>
+        <url>https://github.com/dev-sekhmet/sekhmet-api</url>
+        <developerConnection>scm:git:https://github.com/dev-sekhmet/sekhmet-api.git</developerConnection>
+    </scm>
     <!-- jhipster-needle-distribution-management -->
 
     <properties>
@@ -410,10 +416,22 @@
                 <groupId>org.gaul</groupId>
                 <artifactId>modernizer-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+            </plugin>
             <!-- jhipster-needle-maven-add-plugin -->
         </plugins>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>3.0.0-M4</version>
+                    <configuration>
+                        <tagNameFormat>v{project.version}</tagNameFormat>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>

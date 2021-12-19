@@ -1,4 +1,4 @@
-name: Application CI
+name: Build
 on: [ push ]
 jobs:
   pipeline:
