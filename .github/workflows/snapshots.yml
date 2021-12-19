@@ -34,16 +34,16 @@ jobs:
             [
               {
                 "id": "sekhmet-api-snapshots",
-                "username": "${secrets.ARTIFACTORY_USERNAME_REF}",
-                "password": "${secrets.ARTIFACTORY_PASSWORD_REF}"
+                "username": "${{ secrets.ARTIFACTORY_USERNAME_REF }}",
+                "password": "${{ secrets.ARTIFACTORY_PASSWORD_REF }}"
               }
             ]
 
       - name: Push Snapshot
         run: |
           chmod +x mvnw
-          echo "ARTIFACTORY_USERNAME_REF = ${secrets.ARTIFACTORY_USERNAME_REF}"
-          echo "ARTIFACTORY_PASSWORD_REF = ${secrets.ARTIFACTORY_PASSWORD_REF}"
+          echo "ARTIFACTORY_USERNAME_REF = ${{ secrets.ARTIFACTORY_USERNAME_REF }}"
+          echo "ARTIFACTORY_PASSWORD_REF = ${{ secrets.ARTIFACTORY_PASSWORD_REF }}"
           npm run java:jar:push
 
       - name: Jar file
