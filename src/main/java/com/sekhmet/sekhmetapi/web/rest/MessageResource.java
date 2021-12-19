@@ -4,7 +4,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 
 import com.sekhmet.sekhmetapi.domain.Message;
 import com.sekhmet.sekhmetapi.repository.MessageRepository;
-import com.sekhmet.sekhmetapi.repository.search.MessageSearchRepository;
+import com.sekhmet.sekhmetapi.service.MessageService;
 import com.sekhmet.sekhmetapi.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -24,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -36,7 +34,6 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api")
-@Transactional
 public class MessageResource {
 
     private final Logger log = LoggerFactory.getLogger(MessageResource.class);
@@ -46,13 +43,13 @@ public class MessageResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final MessageService messageService;
+
     private final MessageRepository messageRepository;
 
-    private final MessageSearchRepository messageSearchRepository;
-
-    public MessageResource(MessageRepository messageRepository, MessageSearchRepository messageSearchRepository) {
+    public MessageResource(MessageService messageService, MessageRepository messageRepository) {
+        this.messageService = messageService;
         this.messageRepository = messageRepository;
-        this.messageSearchRepository = messageSearchRepository;
     }
 
     /**
@@ -68,8 +65,7 @@ public class MessageResource {
         if (message.getId() != null) {
             throw new BadRequestAlertException("A new message cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Message result = messageRepository.save(message);
-        messageSearchRepository.save(result);
+        Message result = messageService.save(message);
         return ResponseEntity
             .created(new URI("/api/messages/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
@@ -103,8 +99,7 @@ public class MessageResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Message result = messageRepository.save(message);
-        messageSearchRepository.save(result);
+        Message result = messageService.save(message);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, message.getId().toString()))
@@ -139,45 +134,7 @@ public class MessageResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Message> result = messageRepository
-            .findById(message.getId())
-            .map(existingMessage -> {
-                if (message.getText() != null) {
-                    existingMessage.setText(message.getText());
-                }
-                if (message.getCreatedAt() != null) {
-                    existingMessage.setCreatedAt(message.getCreatedAt());
-                }
-                if (message.getImage() != null) {
-                    existingMessage.setImage(message.getImage());
-                }
-                if (message.getVideo() != null) {
-                    existingMessage.setVideo(message.getVideo());
-                }
-                if (message.getAudio() != null) {
-                    existingMessage.setAudio(message.getAudio());
-                }
-                if (message.getSystem() != null) {
-                    existingMessage.setSystem(message.getSystem());
-                }
-                if (message.getSent() != null) {
-                    existingMessage.setSent(message.getSent());
-                }
-                if (message.getReceived() != null) {
-                    existingMessage.setReceived(message.getReceived());
-                }
-                if (message.getPending() != null) {
-                    existingMessage.setPending(message.getPending());
-                }
-
-                return existingMessage;
-            })
-            .map(messageRepository::save)
-            .map(savedMessage -> {
-                messageSearchRepository.save(savedMessage);
-
-                return savedMessage;
-            });
+        Optional<Message> result = messageService.partialUpdate(message);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -194,7 +151,7 @@ public class MessageResource {
     @GetMapping("/messages")
     public ResponseEntity<List<Message>> getAllMessages(Pageable pageable) {
         log.debug("REST request to get a page of Messages");
-        Page<Message> page = messageRepository.findAll(pageable);
+        Page<Message> page = messageService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -208,7 +165,7 @@ public class MessageResource {
     @GetMapping("/messages/{id}")
     public ResponseEntity<Message> getMessage(@PathVariable UUID id) {
         log.debug("REST request to get Message : {}", id);
-        Optional<Message> message = messageRepository.findById(id);
+        Optional<Message> message = messageService.findOne(id);
         return ResponseUtil.wrapOrNotFound(message);
     }
 
@@ -221,8 +178,7 @@ public class MessageResource {
     @DeleteMapping("/messages/{id}")
     public ResponseEntity<Void> deleteMessage(@PathVariable UUID id) {
         log.debug("REST request to delete Message : {}", id);
-        messageRepository.deleteById(id);
-        messageSearchRepository.deleteById(id);
+        messageService.delete(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
@@ -240,7 +196,7 @@ public class MessageResource {
     @GetMapping("/_search/messages")
     public ResponseEntity<List<Message>> searchMessages(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of Messages for query {}", query);
-        Page<Message> page = messageSearchRepository.search(query, pageable);
+        Page<Message> page = messageService.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

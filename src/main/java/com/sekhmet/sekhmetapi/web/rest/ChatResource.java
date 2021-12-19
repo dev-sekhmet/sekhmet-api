@@ -4,7 +4,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 
 import com.sekhmet.sekhmetapi.domain.Chat;
 import com.sekhmet.sekhmetapi.repository.ChatRepository;
-import com.sekhmet.sekhmetapi.repository.search.ChatSearchRepository;
+import com.sekhmet.sekhmetapi.service.ChatService;
 import com.sekhmet.sekhmetapi.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -24,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -36,7 +34,6 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api")
-@Transactional
 public class ChatResource {
 
     private final Logger log = LoggerFactory.getLogger(ChatResource.class);
@@ -46,13 +43,13 @@ public class ChatResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final ChatService chatService;
+
     private final ChatRepository chatRepository;
 
-    private final ChatSearchRepository chatSearchRepository;
-
-    public ChatResource(ChatRepository chatRepository, ChatSearchRepository chatSearchRepository) {
+    public ChatResource(ChatService chatService, ChatRepository chatRepository) {
+        this.chatService = chatService;
         this.chatRepository = chatRepository;
-        this.chatSearchRepository = chatSearchRepository;
     }
 
     /**
@@ -68,8 +65,7 @@ public class ChatResource {
         if (chat.getId() != null) {
             throw new BadRequestAlertException("A new chat cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Chat result = chatRepository.save(chat);
-        chatSearchRepository.save(result);
+        Chat result = chatService.save(chat);
         return ResponseEntity
             .created(new URI("/api/chats/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
@@ -101,8 +97,7 @@ public class ChatResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Chat result = chatRepository.save(chat);
-        chatSearchRepository.save(result);
+        Chat result = chatService.save(chat);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, chat.getId().toString()))
@@ -137,24 +132,7 @@ public class ChatResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Chat> result = chatRepository
-            .findById(chat.getId())
-            .map(existingChat -> {
-                if (chat.getIcon() != null) {
-                    existingChat.setIcon(chat.getIcon());
-                }
-                if (chat.getName() != null) {
-                    existingChat.setName(chat.getName());
-                }
-
-                return existingChat;
-            })
-            .map(chatRepository::save)
-            .map(savedChat -> {
-                chatSearchRepository.save(savedChat);
-
-                return savedChat;
-            });
+        Optional<Chat> result = chatService.partialUpdate(chat);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -171,7 +149,7 @@ public class ChatResource {
     @GetMapping("/chats")
     public ResponseEntity<List<Chat>> getAllChats(Pageable pageable) {
         log.debug("REST request to get a page of Chats");
-        Page<Chat> page = chatRepository.findAll(pageable);
+        Page<Chat> page = chatService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -185,7 +163,7 @@ public class ChatResource {
     @GetMapping("/chats/{id}")
     public ResponseEntity<Chat> getChat(@PathVariable UUID id) {
         log.debug("REST request to get Chat : {}", id);
-        Optional<Chat> chat = chatRepository.findById(id);
+        Optional<Chat> chat = chatService.findOne(id);
         return ResponseUtil.wrapOrNotFound(chat);
     }
 
@@ -198,8 +176,7 @@ public class ChatResource {
     @DeleteMapping("/chats/{id}")
     public ResponseEntity<Void> deleteChat(@PathVariable UUID id) {
         log.debug("REST request to delete Chat : {}", id);
-        chatRepository.deleteById(id);
-        chatSearchRepository.deleteById(id);
+        chatService.delete(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
@@ -217,7 +194,7 @@ public class ChatResource {
     @GetMapping("/_search/chats")
     public ResponseEntity<List<Chat>> searchChats(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of Chats for query {}", query);
-        Page<Chat> page = chatSearchRepository.search(query, pageable);
+        Page<Chat> page = chatService.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

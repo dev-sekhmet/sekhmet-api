@@ -4,7 +4,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 
 import com.sekhmet.sekhmetapi.domain.ChatMember;
 import com.sekhmet.sekhmetapi.repository.ChatMemberRepository;
-import com.sekhmet.sekhmetapi.repository.search.ChatMemberSearchRepository;
+import com.sekhmet.sekhmetapi.service.ChatMemberService;
 import com.sekhmet.sekhmetapi.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -24,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -36,7 +34,6 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api")
-@Transactional
 public class ChatMemberResource {
 
     private final Logger log = LoggerFactory.getLogger(ChatMemberResource.class);
@@ -46,13 +43,13 @@ public class ChatMemberResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final ChatMemberService chatMemberService;
+
     private final ChatMemberRepository chatMemberRepository;
 
-    private final ChatMemberSearchRepository chatMemberSearchRepository;
-
-    public ChatMemberResource(ChatMemberRepository chatMemberRepository, ChatMemberSearchRepository chatMemberSearchRepository) {
+    public ChatMemberResource(ChatMemberService chatMemberService, ChatMemberRepository chatMemberRepository) {
+        this.chatMemberService = chatMemberService;
         this.chatMemberRepository = chatMemberRepository;
-        this.chatMemberSearchRepository = chatMemberSearchRepository;
     }
 
     /**
@@ -68,8 +65,7 @@ public class ChatMemberResource {
         if (chatMember.getId() != null) {
             throw new BadRequestAlertException("A new chatMember cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        ChatMember result = chatMemberRepository.save(chatMember);
-        chatMemberSearchRepository.save(result);
+        ChatMember result = chatMemberService.save(chatMember);
         return ResponseEntity
             .created(new URI("/api/chat-members/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
@@ -103,8 +99,7 @@ public class ChatMemberResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        ChatMember result = chatMemberRepository.save(chatMember);
-        chatMemberSearchRepository.save(result);
+        ChatMember result = chatMemberService.save(chatMember);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, chatMember.getId().toString()))
@@ -139,21 +134,7 @@ public class ChatMemberResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<ChatMember> result = chatMemberRepository
-            .findById(chatMember.getId())
-            .map(existingChatMember -> {
-                if (chatMember.getScope() != null) {
-                    existingChatMember.setScope(chatMember.getScope());
-                }
-
-                return existingChatMember;
-            })
-            .map(chatMemberRepository::save)
-            .map(savedChatMember -> {
-                chatMemberSearchRepository.save(savedChatMember);
-
-                return savedChatMember;
-            });
+        Optional<ChatMember> result = chatMemberService.partialUpdate(chatMember);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -170,7 +151,7 @@ public class ChatMemberResource {
     @GetMapping("/chat-members")
     public ResponseEntity<List<ChatMember>> getAllChatMembers(Pageable pageable) {
         log.debug("REST request to get a page of ChatMembers");
-        Page<ChatMember> page = chatMemberRepository.findAll(pageable);
+        Page<ChatMember> page = chatMemberService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -184,7 +165,7 @@ public class ChatMemberResource {
     @GetMapping("/chat-members/{id}")
     public ResponseEntity<ChatMember> getChatMember(@PathVariable UUID id) {
         log.debug("REST request to get ChatMember : {}", id);
-        Optional<ChatMember> chatMember = chatMemberRepository.findById(id);
+        Optional<ChatMember> chatMember = chatMemberService.findOne(id);
         return ResponseUtil.wrapOrNotFound(chatMember);
     }
 
@@ -197,8 +178,7 @@ public class ChatMemberResource {
     @DeleteMapping("/chat-members/{id}")
     public ResponseEntity<Void> deleteChatMember(@PathVariable UUID id) {
         log.debug("REST request to delete ChatMember : {}", id);
-        chatMemberRepository.deleteById(id);
-        chatMemberSearchRepository.deleteById(id);
+        chatMemberService.delete(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
@@ -216,7 +196,7 @@ public class ChatMemberResource {
     @GetMapping("/_search/chat-members")
     public ResponseEntity<List<ChatMember>> searchChatMembers(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of ChatMembers for query {}", query);
-        Page<ChatMember> page = chatMemberSearchRepository.search(query, pageable);
+        Page<ChatMember> page = chatMemberService.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
