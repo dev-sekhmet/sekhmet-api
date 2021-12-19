@@ -3,7 +3,6 @@ package com.sekhmet.sekhmetapi.web.rest;
 import com.sekhmet.sekhmetapi.security.AuthoritiesConstants;
 import com.sekhmet.sekhmetapi.security.SecurityUtils;
 import com.sekhmet.sekhmetapi.service.ElasticsearchIndexService;
-import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -28,12 +27,9 @@ public class ElasticsearchIndexResource {
         this.elasticsearchIndexService = elasticsearchIndexService;
     }
 
-    /**
-     * POST  /elasticsearch/index -> Reindex all Elasticsearch documents
-     */
     @PostMapping("/elasticsearch/index")
     @Secured(AuthoritiesConstants.ADMIN)
-    public ResponseEntity<Void> reindexAll() throws URISyntaxException {
+    public ResponseEntity<Void> reindexAll() {
         log.info("REST request to reindex Elasticsearch by user : {}", SecurityUtils.getCurrentUserLogin());
         elasticsearchIndexService.reindexAll();
         return ResponseEntity
