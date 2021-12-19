@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.validation.Valid;
@@ -18,10 +19,16 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
@@ -80,7 +87,7 @@ public class ChatResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/chats/{id}")
-    public ResponseEntity<Chat> updateChat(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody Chat chat)
+    public ResponseEntity<Chat> updateChat(@PathVariable(value = "id", required = false) final UUID id, @Valid @RequestBody Chat chat)
         throws URISyntaxException {
         log.debug("REST request to update Chat : {}, {}", id, chat);
         if (chat.getId() == null) {
@@ -115,7 +122,7 @@ public class ChatResource {
      */
     @PatchMapping(value = "/chats/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<Chat> partialUpdateChat(
-        @PathVariable(value = "id", required = false) final Long id,
+        @PathVariable(value = "id", required = false) final UUID id,
         @NotNull @RequestBody Chat chat
     ) throws URISyntaxException {
         log.debug("REST request to partial update Chat partially : {}, {}", id, chat);
@@ -133,9 +140,6 @@ public class ChatResource {
         Optional<Chat> result = chatRepository
             .findById(chat.getId())
             .map(existingChat -> {
-                if (chat.getGuid() != null) {
-                    existingChat.setGuid(chat.getGuid());
-                }
                 if (chat.getIcon() != null) {
                     existingChat.setIcon(chat.getIcon());
                 }
@@ -161,12 +165,15 @@ public class ChatResource {
     /**
      * {@code GET  /chats} : get all the chats.
      *
+     * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of chats in body.
      */
     @GetMapping("/chats")
-    public List<Chat> getAllChats() {
-        log.debug("REST request to get all Chats");
-        return chatRepository.findAll();
+    public ResponseEntity<List<Chat>> getAllChats(Pageable pageable) {
+        log.debug("REST request to get a page of Chats");
+        Page<Chat> page = chatRepository.findAll(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
@@ -176,7 +183,7 @@ public class ChatResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the chat, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/chats/{id}")
-    public ResponseEntity<Chat> getChat(@PathVariable Long id) {
+    public ResponseEntity<Chat> getChat(@PathVariable UUID id) {
         log.debug("REST request to get Chat : {}", id);
         Optional<Chat> chat = chatRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(chat);
@@ -189,7 +196,7 @@ public class ChatResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/chats/{id}")
-    public ResponseEntity<Void> deleteChat(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteChat(@PathVariable UUID id) {
         log.debug("REST request to delete Chat : {}", id);
         chatRepository.deleteById(id);
         chatSearchRepository.deleteById(id);
@@ -204,11 +211,14 @@ public class ChatResource {
      * to the query.
      *
      * @param query the query of the chat search.
+     * @param pageable the pagination information.
      * @return the result of the search.
      */
     @GetMapping("/_search/chats")
-    public List<Chat> searchChats(@RequestParam String query) {
-        log.debug("REST request to search Chats for query {}", query);
-        return StreamSupport.stream(chatSearchRepository.search(query).spliterator(), false).collect(Collectors.toList());
+    public ResponseEntity<List<Chat>> searchChats(@RequestParam String query, Pageable pageable) {
+        log.debug("REST request to search for a page of Chats for query {}", query);
+        Page<Chat> page = chatSearchRepository.search(query, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }

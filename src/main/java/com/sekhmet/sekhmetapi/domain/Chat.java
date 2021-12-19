@@ -21,15 +21,11 @@ public class Chat implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
-    @Column(name = "id")
-    private Long id;
-
     @NotNull
-    @Column(name = "guid", nullable = false, unique = true)
-    private UUID guid;
+    @Id
+    @GeneratedValue
+    @Column(name = "id", nullable = false, unique = true)
+    private UUID id;
 
     @Column(name = "icon")
     private String icon;
@@ -49,30 +45,17 @@ public class Chat implements Serializable {
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
-    public Long getId() {
+    public UUID getId() {
         return this.id;
     }
 
-    public Chat id(Long id) {
+    public Chat id(UUID id) {
         this.setId(id);
         return this;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
-    }
-
-    public UUID getGuid() {
-        return this.guid;
-    }
-
-    public Chat guid(UUID guid) {
-        this.setGuid(guid);
-        return this;
-    }
-
-    public void setGuid(UUID guid) {
-        this.guid = guid;
     }
 
     public String getIcon() {
@@ -187,7 +170,6 @@ public class Chat implements Serializable {
     public String toString() {
         return "Chat{" +
             "id=" + getId() +
-            ", guid='" + getGuid() + "'" +
             ", icon='" + getIcon() + "'" +
             ", name='" + getName() + "'" +
             "}";

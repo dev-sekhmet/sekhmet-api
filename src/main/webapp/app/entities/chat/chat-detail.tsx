@@ -25,16 +25,10 @@ export const ChatDetail = (props: RouteComponentProps<{ id: string }>) => {
         <dl className="jh-entity-details">
           <dt>
             <span id="id">
-              <Translate contentKey="global.field.id">ID</Translate>
+              <Translate contentKey="sekhmetApiApp.chat.id">Id</Translate>
             </span>
           </dt>
           <dd>{chatEntity.id}</dd>
-          <dt>
-            <span id="guid">
-              <Translate contentKey="sekhmetApiApp.chat.guid">Guid</Translate>
-            </span>
-          </dt>
-          <dd>{chatEntity.guid}</dd>
           <dt>
             <span id="icon">
               <Translate contentKey="sekhmetApiApp.chat.icon">Icon</Translate>

@@ -5,12 +5,19 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import org.elasticsearch.client.IndicesClient;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
+import org.springframework.data.elasticsearch.client.ClientConfiguration;
+import org.springframework.data.elasticsearch.client.RestClients;
 import org.springframework.data.elasticsearch.config.ElasticsearchConfigurationSupport;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.convert.ElasticsearchCustomConversions;
 
 @Configuration
@@ -101,5 +108,11 @@ public class ElasticsearchConfiguration extends ElasticsearchConfigurationSuppor
             }
             return LocalDate.parse(source);
         }
+    }
+
+    @Bean
+    public IndicesClient client(@Value("${spring.elasticsearch.rest.uris}") String elasticSearchUrl) {
+        ClientConfiguration clientConfiguration = ClientConfiguration.builder().connectedTo(elasticSearchUrl).build();
+        return RestClients.create(clientConfiguration).rest().indices();
     }
 }

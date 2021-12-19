@@ -17,7 +17,7 @@
             <column name="scope" type="varchar(255)">
                 <constraints nullable="false" />
             </column>
-            <column name="chat_id" type="bigint">
+            <column name="chat_id" type="${uuidType}">
                 <constraints nullable="true" />
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->

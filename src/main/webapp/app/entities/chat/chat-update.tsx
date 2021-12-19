@@ -20,7 +20,7 @@ export const ChatUpdate = (props: RouteComponentProps<{ id: string }>) => {
   const updating = useAppSelector(state => state.chat.updating);
   const updateSuccess = useAppSelector(state => state.chat.updateSuccess);
   const handleClose = () => {
-    props.history.push('/chat');
+    props.history.push('/chat' + props.location.search);
   };
 
   useEffect(() => {
@@ -78,20 +78,10 @@ export const ChatUpdate = (props: RouteComponentProps<{ id: string }>) => {
                   required
                   readOnly
                   id="chat-id"
-                  label={translate('global.field.id')}
+                  label={translate('sekhmetApiApp.chat.id')}
                   validate={{ required: true }}
                 />
               ) : null}
-              <ValidatedField
-                label={translate('sekhmetApiApp.chat.guid')}
-                id="chat-guid"
-                name="guid"
-                data-cy="guid"
-                type="text"
-                validate={{
-                  required: { value: true, message: translate('entity.validation.required') },
-                }}
-              />
               <ValidatedField label={translate('sekhmetApiApp.chat.icon')} id="chat-icon" name="icon" data-cy="icon" type="text" />
               <ValidatedField label={translate('sekhmetApiApp.chat.name')} id="chat-name" name="name" data-cy="name" type="text" />
               <Button tag={Link} id="cancel-save" data-cy="entityCreateCancelButton" to="/chat" replace color="info">

@@ -18,8 +18,7 @@
       "detail": {
         "title": "Chat"
       },
-      "id": "ID",
-      "guid": "Guid",
+      "id": "Id",
       "icon": "Icon",
       "name": "Name",
       "members": "Members",

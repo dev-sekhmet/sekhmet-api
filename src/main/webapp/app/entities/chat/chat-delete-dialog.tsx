@@ -20,7 +20,7 @@ export const ChatDeleteDialog = (props: RouteComponentProps<{ id: string }>) => 
   const updateSuccess = useAppSelector(state => state.chat.updateSuccess);
 
   const handleClose = () => {
-    props.history.push('/chat');
+    props.history.push('/chat' + props.location.search);
   };
 
   useEffect(() => {

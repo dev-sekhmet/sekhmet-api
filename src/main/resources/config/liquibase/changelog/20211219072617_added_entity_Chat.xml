@@ -11,11 +11,8 @@
     -->
     <changeSet id="20211219072617-1" author="jhipster">
         <createTable tableName="chat">
-            <column name="id" type="bigint">
+            <column name="id" type="${uuidType}">
                 <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="guid" type="${uuidType}">
-                <constraints nullable="false" unique="true" uniqueConstraintName="ux_chat__guid" />
             </column>
             <column name="icon" type="varchar(255)">
                 <constraints nullable="true" />
@@ -43,8 +40,7 @@
                   separator=";"
                   tableName="chat"
                   usePreparedStatements="true">
-            <column name="id" type="numeric"/>
-            <column name="guid" type="${uuidType}"/>
+            <column name="id" type="${uuidType}"/>
             <column name="icon" type="string"/>
             <column name="name" type="string"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->

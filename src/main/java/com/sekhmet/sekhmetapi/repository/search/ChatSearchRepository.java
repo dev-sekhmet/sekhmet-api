@@ -3,7 +3,13 @@ package com.sekhmet.sekhmetapi.repository.search;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 import com.sekhmet.sekhmetapi.domain.Chat;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
@@ -12,10 +18,10 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 /**
  * Spring Data Elasticsearch repository for the {@link Chat} entity.
  */
-public interface ChatSearchRepository extends ElasticsearchRepository<Chat, Long>, ChatSearchRepositoryInternal {}
+public interface ChatSearchRepository extends ElasticsearchRepository<Chat, UUID>, ChatSearchRepositoryInternal {}
 
 interface ChatSearchRepositoryInternal {
-    Stream<Chat> search(String query);
+    Page<Chat> search(String query, Pageable pageable);
 }
 
 class ChatSearchRepositoryInternalImpl implements ChatSearchRepositoryInternal {
@@ -27,8 +33,15 @@ class ChatSearchRepositoryInternalImpl implements ChatSearchRepositoryInternal {
     }
 
     @Override
-    public Stream<Chat> search(String query) {
+    public Page<Chat> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
-        return elasticsearchTemplate.search(nativeSearchQuery, Chat.class).map(SearchHit::getContent).stream();
+        nativeSearchQuery.setPageable(pageable);
+        List<Chat> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, Chat.class)
+            .map(SearchHit::getContent)
+            .stream()
+            .collect(Collectors.toList());
+
+        return new PageImpl<>(hits, pageable, hits.size());
     }
 }

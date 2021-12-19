@@ -31,6 +31,7 @@ describe('Entities reducer tests', () => {
     errorMessage: null,
     entities: [],
     entity: defaultValue,
+    totalItems: 0,
     updating: false,
     updateSuccess: false,
   };
@@ -119,7 +120,7 @@ describe('Entities reducer tests', () => {
 
   describe('Successes', () => {
     it('should fetch all entities', () => {
-      const payload = { data: [{ 1: 'fake1' }, { 2: 'fake2' }] };
+      const payload = { data: [{ 1: 'fake1' }, { 2: 'fake2' }], headers: { 'x-total-count': 123 } };
       expect(
         reducer(undefined, {
           type: getEntities.fulfilled.type,
@@ -128,11 +129,12 @@ describe('Entities reducer tests', () => {
       ).toEqual({
         ...initialState,
         loading: false,
+        totalItems: payload.headers['x-total-count'],
         entities: payload.data,
       });
     });
     it('should search all entities', () => {
-      const payload = { data: [{ 1: 'fake1' }, { 2: 'fake2' }] };
+      const payload = { data: [{ 1: 'fake1' }, { 2: 'fake2' }], headers: { 'x-total-count': 123 } };
       expect(
         reducer(undefined, {
           type: searchEntities.fulfilled.type,
@@ -141,6 +143,7 @@ describe('Entities reducer tests', () => {
       ).toEqual({
         ...initialState,
         loading: false,
+        totalItems: payload.headers['x-total-count'],
         entities: payload.data,
       });
     });
@@ -258,7 +261,7 @@ describe('Entities reducer tests', () => {
           payload: resolvedObject,
         },
       ];
-      await store.dispatch(createEntity({ id: 456 }));
+      await store.dispatch(createEntity({ id: '1361f429-3817-4123-8ee3-fdf8943310b2' }));
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
       expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
       expect(store.getActions()[2]).toMatchObject(expectedActions[2]);
@@ -277,7 +280,7 @@ describe('Entities reducer tests', () => {
           payload: resolvedObject,
         },
       ];
-      await store.dispatch(updateEntity({ id: 456 }));
+      await store.dispatch(updateEntity({ id: '1361f429-3817-4123-8ee3-fdf8943310b2' }));
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
       expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
       expect(store.getActions()[2]).toMatchObject(expectedActions[2]);
@@ -296,7 +299,7 @@ describe('Entities reducer tests', () => {
           payload: resolvedObject,
         },
       ];
-      await store.dispatch(partialUpdateEntity({ id: 123 }));
+      await store.dispatch(partialUpdateEntity({ id: '9fec3727-3421-4967-b213-ba36557ca194' }));
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
       expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
       expect(store.getActions()[2]).toMatchObject(expectedActions[2]);

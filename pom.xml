@@ -23,11 +23,11 @@
     <distributionManagement>
         <snapshotRepository>
             <id>sekhmet-api-snapshots</id>
-            <url>http://artifactory:8081/artifactory/libs-snapshot</url>
+            <url>https://sekhmet.jfrog.io/artifactory/sekhmet-api-libs-snapshot/</url>
         </snapshotRepository>
         <repository>
             <id>sekhmet-api-releases</id>
-            <url>http://artifactory:8081/artifactory/libs-release</url>
+            <url>https://sekhmet.jfrog.io/artifactory/sekhmet-api-libs-release/</url>
         </repository>
     </distributionManagement>
     <!-- jhipster-needle-distribution-management -->

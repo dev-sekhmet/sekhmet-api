@@ -2,7 +2,7 @@
   "name": "Chat",
   "fields": [
     {
-      "fieldName": "guid",
+      "fieldName": "id",
       "fieldType": "UUID",
       "fieldValidateRules": ["required", "unique"]
     },
@@ -31,7 +31,7 @@
   ],
   "entityTableName": "chat",
   "dto": "no",
-  "pagination": "no",
+  "pagination": "pagination",
   "service": "no",
   "jpaMetamodelFiltering": false,
   "fluentMethods": true,

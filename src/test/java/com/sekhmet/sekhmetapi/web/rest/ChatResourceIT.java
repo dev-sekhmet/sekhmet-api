@@ -12,10 +12,7 @@ import com.sekhmet.sekhmetapi.repository.ChatRepository;
 import com.sekhmet.sekhmetapi.repository.search.ChatSearchRepository;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +21,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,9 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class ChatResourceIT {
 
-    private static final UUID DEFAULT_GUID = UUID.randomUUID();
-    private static final UUID UPDATED_GUID = UUID.randomUUID();
-
     private static final String DEFAULT_ICON = "AAAAAAAAAA";
     private static final String UPDATED_ICON = "BBBBBBBBBB";
 
@@ -50,9 +46,6 @@ class ChatResourceIT {
     private static final String ENTITY_API_URL = "/api/chats";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
     private static final String ENTITY_SEARCH_API_URL = "/api/_search/chats";
-
-    private static Random random = new Random();
-    private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
     @Autowired
     private ChatRepository chatRepository;
@@ -80,7 +73,7 @@ class ChatResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Chat createEntity(EntityManager em) {
-        Chat chat = new Chat().guid(DEFAULT_GUID).icon(DEFAULT_ICON).name(DEFAULT_NAME);
+        Chat chat = new Chat().icon(DEFAULT_ICON).name(DEFAULT_NAME);
         return chat;
     }
 
@@ -91,7 +84,7 @@ class ChatResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Chat createUpdatedEntity(EntityManager em) {
-        Chat chat = new Chat().guid(UPDATED_GUID).icon(UPDATED_ICON).name(UPDATED_NAME);
+        Chat chat = new Chat().icon(UPDATED_ICON).name(UPDATED_NAME);
         return chat;
     }
 
@@ -113,7 +106,6 @@ class ChatResourceIT {
         List<Chat> chatList = chatRepository.findAll();
         assertThat(chatList).hasSize(databaseSizeBeforeCreate + 1);
         Chat testChat = chatList.get(chatList.size() - 1);
-        assertThat(testChat.getGuid()).isEqualTo(DEFAULT_GUID);
         assertThat(testChat.getIcon()).isEqualTo(DEFAULT_ICON);
         assertThat(testChat.getName()).isEqualTo(DEFAULT_NAME);
 
@@ -125,7 +117,7 @@ class ChatResourceIT {
     @Transactional
     void createChatWithExistingId() throws Exception {
         // Create the Chat with an existing ID
-        chat.setId(1L);
+        chatRepository.saveAndFlush(chat);
 
         int databaseSizeBeforeCreate = chatRepository.findAll().size();
 
@@ -144,23 +136,6 @@ class ChatResourceIT {
 
     @Test
     @Transactional
-    void checkGuidIsRequired() throws Exception {
-        int databaseSizeBeforeTest = chatRepository.findAll().size();
-        // set the field null
-        chat.setGuid(null);
-
-        // Create the Chat, which fails.
-
-        restChatMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(chat)))
-            .andExpect(status().isBadRequest());
-
-        List<Chat> chatList = chatRepository.findAll();
-        assertThat(chatList).hasSize(databaseSizeBeforeTest);
-    }
-
-    @Test
-    @Transactional
     void getAllChats() throws Exception {
         // Initialize the database
         chatRepository.saveAndFlush(chat);
@@ -170,8 +145,7 @@ class ChatResourceIT {
             .perform(get(ENTITY_API_URL + "?sort=id,desc"))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(chat.getId().intValue())))
-            .andExpect(jsonPath("$.[*].guid").value(hasItem(DEFAULT_GUID.toString())))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(chat.getId().toString())))
             .andExpect(jsonPath("$.[*].icon").value(hasItem(DEFAULT_ICON)))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)));
     }
@@ -187,8 +161,7 @@ class ChatResourceIT {
             .perform(get(ENTITY_API_URL_ID, chat.getId()))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.id").value(chat.getId().intValue()))
-            .andExpect(jsonPath("$.guid").value(DEFAULT_GUID.toString()))
+            .andExpect(jsonPath("$.id").value(chat.getId().toString()))
             .andExpect(jsonPath("$.icon").value(DEFAULT_ICON))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME));
     }
@@ -197,7 +170,7 @@ class ChatResourceIT {
     @Transactional
     void getNonExistingChat() throws Exception {
         // Get the chat
-        restChatMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+        restChatMockMvc.perform(get(ENTITY_API_URL_ID, UUID.randomUUID().toString())).andExpect(status().isNotFound());
     }
 
     @Test
@@ -212,7 +185,7 @@ class ChatResourceIT {
         Chat updatedChat = chatRepository.findById(chat.getId()).get();
         // Disconnect from session so that the updates on updatedChat are not directly saved in db
         em.detach(updatedChat);
-        updatedChat.guid(UPDATED_GUID).icon(UPDATED_ICON).name(UPDATED_NAME);
+        updatedChat.icon(UPDATED_ICON).name(UPDATED_NAME);
 
         restChatMockMvc
             .perform(
@@ -226,7 +199,6 @@ class ChatResourceIT {
         List<Chat> chatList = chatRepository.findAll();
         assertThat(chatList).hasSize(databaseSizeBeforeUpdate);
         Chat testChat = chatList.get(chatList.size() - 1);
-        assertThat(testChat.getGuid()).isEqualTo(UPDATED_GUID);
         assertThat(testChat.getIcon()).isEqualTo(UPDATED_ICON);
         assertThat(testChat.getName()).isEqualTo(UPDATED_NAME);
 
@@ -238,7 +210,7 @@ class ChatResourceIT {
     @Transactional
     void putNonExistingChat() throws Exception {
         int databaseSizeBeforeUpdate = chatRepository.findAll().size();
-        chat.setId(count.incrementAndGet());
+        chat.setId(UUID.randomUUID());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restChatMockMvc
@@ -261,12 +233,12 @@ class ChatResourceIT {
     @Transactional
     void putWithIdMismatchChat() throws Exception {
         int databaseSizeBeforeUpdate = chatRepository.findAll().size();
-        chat.setId(count.incrementAndGet());
+        chat.setId(UUID.randomUUID());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restChatMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, count.incrementAndGet())
+                put(ENTITY_API_URL_ID, UUID.randomUUID())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtil.convertObjectToJsonBytes(chat))
             )
@@ -284,7 +256,7 @@ class ChatResourceIT {
     @Transactional
     void putWithMissingIdPathParamChat() throws Exception {
         int databaseSizeBeforeUpdate = chatRepository.findAll().size();
-        chat.setId(count.incrementAndGet());
+        chat.setId(UUID.randomUUID());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restChatMockMvc
@@ -311,7 +283,7 @@ class ChatResourceIT {
         Chat partialUpdatedChat = new Chat();
         partialUpdatedChat.setId(chat.getId());
 
-        partialUpdatedChat.guid(UPDATED_GUID).name(UPDATED_NAME);
+        partialUpdatedChat.icon(UPDATED_ICON);
 
         restChatMockMvc
             .perform(
@@ -325,9 +297,8 @@ class ChatResourceIT {
         List<Chat> chatList = chatRepository.findAll();
         assertThat(chatList).hasSize(databaseSizeBeforeUpdate);
         Chat testChat = chatList.get(chatList.size() - 1);
-        assertThat(testChat.getGuid()).isEqualTo(UPDATED_GUID);
-        assertThat(testChat.getIcon()).isEqualTo(DEFAULT_ICON);
-        assertThat(testChat.getName()).isEqualTo(UPDATED_NAME);
+        assertThat(testChat.getIcon()).isEqualTo(UPDATED_ICON);
+        assertThat(testChat.getName()).isEqualTo(DEFAULT_NAME);
     }
 
     @Test
@@ -342,7 +313,7 @@ class ChatResourceIT {
         Chat partialUpdatedChat = new Chat();
         partialUpdatedChat.setId(chat.getId());
 
-        partialUpdatedChat.guid(UPDATED_GUID).icon(UPDATED_ICON).name(UPDATED_NAME);
+        partialUpdatedChat.icon(UPDATED_ICON).name(UPDATED_NAME);
 
         restChatMockMvc
             .perform(
@@ -356,7 +327,6 @@ class ChatResourceIT {
         List<Chat> chatList = chatRepository.findAll();
         assertThat(chatList).hasSize(databaseSizeBeforeUpdate);
         Chat testChat = chatList.get(chatList.size() - 1);
-        assertThat(testChat.getGuid()).isEqualTo(UPDATED_GUID);
         assertThat(testChat.getIcon()).isEqualTo(UPDATED_ICON);
         assertThat(testChat.getName()).isEqualTo(UPDATED_NAME);
     }
@@ -365,7 +335,7 @@ class ChatResourceIT {
     @Transactional
     void patchNonExistingChat() throws Exception {
         int databaseSizeBeforeUpdate = chatRepository.findAll().size();
-        chat.setId(count.incrementAndGet());
+        chat.setId(UUID.randomUUID());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restChatMockMvc
@@ -388,12 +358,12 @@ class ChatResourceIT {
     @Transactional
     void patchWithIdMismatchChat() throws Exception {
         int databaseSizeBeforeUpdate = chatRepository.findAll().size();
-        chat.setId(count.incrementAndGet());
+        chat.setId(UUID.randomUUID());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restChatMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, count.incrementAndGet())
+                patch(ENTITY_API_URL_ID, UUID.randomUUID())
                     .contentType("application/merge-patch+json")
                     .content(TestUtil.convertObjectToJsonBytes(chat))
             )
@@ -411,7 +381,7 @@ class ChatResourceIT {
     @Transactional
     void patchWithMissingIdPathParamChat() throws Exception {
         int databaseSizeBeforeUpdate = chatRepository.findAll().size();
-        chat.setId(count.incrementAndGet());
+        chat.setId(UUID.randomUUID());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restChatMockMvc
@@ -436,7 +406,7 @@ class ChatResourceIT {
 
         // Delete the chat
         restChatMockMvc
-            .perform(delete(ENTITY_API_URL_ID, chat.getId()).accept(MediaType.APPLICATION_JSON))
+            .perform(delete(ENTITY_API_URL_ID, chat.getId().toString()).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
@@ -453,15 +423,15 @@ class ChatResourceIT {
         // Configure the mock search repository
         // Initialize the database
         chatRepository.saveAndFlush(chat);
-        when(mockChatSearchRepository.search("id:" + chat.getId())).thenReturn(Stream.of(chat));
+        when(mockChatSearchRepository.search("id:" + chat.getId(), PageRequest.of(0, 20)))
+            .thenReturn(new PageImpl<>(Collections.singletonList(chat), PageRequest.of(0, 1), 1));
 
         // Search the chat
         restChatMockMvc
             .perform(get(ENTITY_SEARCH_API_URL + "?query=id:" + chat.getId()))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(chat.getId().intValue())))
-            .andExpect(jsonPath("$.[*].guid").value(hasItem(DEFAULT_GUID.toString())))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(chat.getId().toString())))
             .andExpect(jsonPath("$.[*].icon").value(hasItem(DEFAULT_ICON)))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)));
     }
