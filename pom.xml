@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.sekhmet.sekhmetapi</groupId>
     <artifactId>sekhmet-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
     <name>Sekhmet Api</name>
     <description>Description for sekhmetApi</description>
@@ -35,7 +32,8 @@
         <connection>scm:git:https://github.com/dev-sekhmet/sekhmet-api.git</connection>
         <url>https://github.com/dev-sekhmet/sekhmet-api</url>
         <developerConnection>scm:git:https://github.com/dev-sekhmet/sekhmet-api.git</developerConnection>
-    </scm>
+      <tag>v{project.version}</tag>
+  </scm>
     <!-- jhipster-needle-distribution-management -->
 
     <properties>
@@ -684,9 +682,9 @@
                         <diffChangeLogFile>${project.basedir}/src/main/resources/config/liquibase/changelog/${maven.build.timestamp}_changelog.xml</diffChangeLogFile>
                         <driver>org.postgresql.Driver</driver>
                         <url>jdbc:postgresql://localhost:5432/sekhmetApi</url>
-                        <defaultSchemaName></defaultSchemaName>
+                        <defaultSchemaName />
                         <username>sekhmetApi</username>
-                        <password></password>
+                        <password />
                         <referenceUrl>hibernate:spring:com.sekhmet.sekhmetapi.domain?dialect=tech.jhipster.domain.util.FixedPostgreSQL10Dialect&amp;hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&amp;hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy</referenceUrl>
                         <verbose>true</verbose>
                         <logging>debug</logging>
@@ -990,7 +988,7 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <condition property="skip.npm" value="true" else="false" >
+                                        <condition property="skip.npm" value="true" else="false">
                                             <and>
                                                 <available file="checksums.csv" filepath="${project.build.directory}" />
                                                 <available file="checksums.csv.old" filepath="${project.build.directory}" />
@@ -1242,7 +1240,7 @@
                                                 </goals>
                                             </pluginExecutionFilter>
                                             <action>
-                                                <ignore/>
+                                                <ignore />
                                             </action>
                                         </pluginExecution>
                                         <pluginExecution>
@@ -1256,7 +1254,7 @@
                                                 </goals>
                                             </pluginExecutionFilter>
                                             <action>
-                                                <ignore/>
+                                                <ignore />
                                             </action>
                                         </pluginExecution>
                                     </pluginExecutions>
