@@ -40,7 +40,9 @@ jobs:
             ]
 
       - name: Push Snapshot
-        run: npm run java:jar:prod
+        run: |
+          chmod +x mvnw
+          npm run java:jar:prod
 
       - name: Jar file
         uses: actions/upload-artifact@v2
