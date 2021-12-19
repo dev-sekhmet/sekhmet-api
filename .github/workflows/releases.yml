@@ -6,7 +6,7 @@ on:
       - release/v[1-9]+.[0-9]+.[x|0-9]+
 jobs:
   pipeline:
-    name: sekhmetApi Snapshot push
+    name: sekhmetApi Release push
     runs-on: ubuntu-latest
     if: "github.event.label.name == 'release_push' && !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.pull_request.title, '[skip ci]') && !contains(github.event.pull_request.title, '[ci skip]')"
     timeout-minutes: 40
