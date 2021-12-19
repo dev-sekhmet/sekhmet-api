@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -23,17 +24,19 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
  * A user.
  */
 @Entity
-@Table(name = "jhi_user")
+@Table(name = "skh_user")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "user")
 public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @NotNull
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
-    private Long id;
+    @GeneratedValue
+    @Column(name = "id", nullable = false, unique = true)
+    @Field(type = FieldType.Keyword)
+    private UUID id;
 
     @NotNull
     @Pattern(regexp = Constants.LOGIN_REGEX)
@@ -46,6 +49,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @NotNull
     @Size(min = 60, max = 60)
     @Column(name = "password_hash", length = 60, nullable = false)
+    @Field(type = FieldType.Object, enabled = false)
     private String password;
 
     @Size(max = 50)
@@ -66,6 +70,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @NotNull
     @Column(nullable = false)
+    @Field(type = FieldType.Object, enabled = false)
     private boolean activated = false;
 
     @Size(min = 2, max = 10)
@@ -85,16 +90,18 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @Size(max = 20)
     @Column(name = "reset_key", length = 20)
+    @Field(type = FieldType.Object, enabled = false)
     @JsonIgnore
     private String resetKey;
 
     @Column(name = "reset_date")
+    @Field(type = FieldType.Object, enabled = false)
     private Instant resetDate = null;
 
     @JsonIgnore
     @ManyToMany
     @JoinTable(
-        name = "jhi_user_authority",
+        name = "skh_user_authority",
         joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") },
         inverseJoinColumns = { @JoinColumn(name = "authority_name", referencedColumnName = "name") }
     )
@@ -102,11 +109,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @BatchSize(size = 20)
     private Set<Authority> authorities = new HashSet<>();
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

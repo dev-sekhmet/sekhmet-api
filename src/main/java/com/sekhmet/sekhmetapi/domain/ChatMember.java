@@ -8,6 +8,8 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 /**
  * A ChatMember.
@@ -24,11 +26,13 @@ public class ChatMember implements Serializable {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)
+    @Field(type = FieldType.Object, enabled = false)
     private UUID id;
 
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "scope", nullable = false)
+    @Field(type = FieldType.Object, enabled = false)
     private ChatMemberScope scope;
 
     @ManyToOne

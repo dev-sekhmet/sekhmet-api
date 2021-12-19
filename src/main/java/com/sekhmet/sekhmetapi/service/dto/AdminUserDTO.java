@@ -5,6 +5,7 @@ import com.sekhmet.sekhmetapi.domain.Authority;
 import com.sekhmet.sekhmetapi.domain.User;
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.validation.constraints.*;
 
@@ -13,7 +14,7 @@ import javax.validation.constraints.*;
  */
 public class AdminUserDTO {
 
-    private Long id;
+    private UUID id;
 
     @NotBlank
     @Pattern(regexp = Constants.LOGIN_REGEX)
@@ -68,11 +69,11 @@ public class AdminUserDTO {
         this.authorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

@@ -1,13 +1,14 @@
 package com.sekhmet.sekhmetapi.service.dto;
 
 import com.sekhmet.sekhmetapi.domain.User;
+import java.util.UUID;
 
 /**
  * A DTO representing a user, with only the public attributes.
  */
 public class UserDTO {
 
-    private Long id;
+    private UUID id;
 
     private String login;
 
@@ -21,11 +22,11 @@ public class UserDTO {
         this.login = user.getLogin();
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

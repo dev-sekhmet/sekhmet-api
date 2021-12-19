@@ -3,6 +3,7 @@ package com.sekhmet.sekhmetapi.repository.search;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 import com.sekhmet.sekhmetapi.domain.User;
+import java.util.UUID;
 import java.util.stream.Stream;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -12,7 +13,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 /**
  * Spring Data Elasticsearch repository for the User entity.
  */
-public interface UserSearchRepository extends ElasticsearchRepository<User, Long>, UserSearchRepositoryInternal {}
+public interface UserSearchRepository extends ElasticsearchRepository<User, UUID>, UserSearchRepositoryInternal {}
 
 interface UserSearchRepositoryInternal {
     Stream<User> search(String query);
