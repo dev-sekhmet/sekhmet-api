@@ -2,6 +2,8 @@ name: Release
 on:
   pull_request:
     types: [ labeled ]
+    branches:
+      - v[1-9]+.[0-9]+.[x|0-9]+
 jobs:
   pipeline:
     name: sekhmetApi Snapshot push
