@@ -9,6 +9,8 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 /**
  * A Chat.
@@ -25,12 +27,15 @@ public class Chat implements Serializable {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)
+    @Field(type = FieldType.Keyword)
     private UUID id;
 
     @Column(name = "icon")
+    @Field(type = FieldType.Keyword)
     private String icon;
 
     @Column(name = "name")
+    @Field(type = FieldType.Keyword)
     private String name;
 
     @OneToMany(mappedBy = "chat")

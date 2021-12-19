@@ -8,6 +8,8 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 /**
  * A Message.
@@ -24,33 +26,43 @@ public class Message implements Serializable {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)
+    @Field(type = FieldType.Keyword)
     private UUID id;
 
     @Column(name = "text")
+    @Field(type = FieldType.Keyword)
     private String text;
 
     @Column(name = "created_at")
+    @Field(type = FieldType.Keyword)
     private LocalDate createdAt;
 
     @Column(name = "image")
+    @Field(type = FieldType.Keyword)
     private String image;
 
     @Column(name = "video")
+    @Field(type = FieldType.Keyword)
     private String video;
 
     @Column(name = "audio")
+    @Field(type = FieldType.Keyword)
     private String audio;
 
     @Column(name = "system")
+    @Field(type = FieldType.Object, enabled = false)
     private Boolean system;
 
     @Column(name = "sent")
+    @Field(type = FieldType.Object, enabled = false)
     private Boolean sent;
 
     @Column(name = "received")
+    @Field(type = FieldType.Object, enabled = false)
     private Boolean received;
 
     @Column(name = "pending")
+    @Field(type = FieldType.Object, enabled = false)
     private Boolean pending;
 
     @ManyToOne

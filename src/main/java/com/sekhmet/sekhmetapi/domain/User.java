@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 /**
@@ -38,6 +39,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
     @Column(length = 50, unique = true, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String login;
 
     @JsonIgnore
@@ -48,15 +50,18 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @Size(max = 50)
     @Column(name = "first_name", length = 50)
+    @Field(type = FieldType.Keyword)
     private String firstName;
 
     @Size(max = 50)
     @Column(name = "last_name", length = 50)
+    @Field(type = FieldType.Keyword)
     private String lastName;
 
     @Email
     @Size(min = 5, max = 254)
     @Column(length = 254, unique = true)
+    @Field(type = FieldType.Keyword)
     private String email;
 
     @NotNull
@@ -65,10 +70,12 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @Size(min = 2, max = 10)
     @Column(name = "lang_key", length = 10)
+    @Field(type = FieldType.Keyword)
     private String langKey;
 
     @Size(max = 256)
     @Column(name = "image_url", length = 256)
+    @Field(type = FieldType.Keyword)
     private String imageUrl;
 
     @Size(max = 20)

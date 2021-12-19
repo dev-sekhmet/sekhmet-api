@@ -16,7 +16,6 @@ import com.sekhmet.sekhmetapi.repository.search.UserSearchRepository;
 import io.micrometer.core.annotation.Timed;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -27,18 +26,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import javax.persistence.ManyToMany;
-import org.elasticsearch.client.IndicesClient;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.Requests;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.PutMappingRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.scheduling.annotation.Async;
@@ -69,8 +64,7 @@ public class ElasticsearchIndexService {
 
     private final UserSearchRepository userSearchRepository;
 
-    private final IndicesClient indicesClient;
-    private final ElasticsearchTemplate elasticsearchTemplate = null;
+    private final ElasticsearchRestTemplate elasticsearchTemplate;
 
     public ElasticsearchIndexService(
         UserRepository userRepository,
@@ -81,7 +75,7 @@ public class ElasticsearchIndexService {
         ChatMemberSearchRepository chatMemberSearchRepository,
         MessageRepository messageRepository,
         MessageSearchRepository messageSearchRepository,
-        IndicesClient indicesClient
+        ElasticsearchRestTemplate elasticsearchTemplate
     ) {
         this.userRepository = userRepository;
         this.userSearchRepository = userSearchRepository;
@@ -91,7 +85,7 @@ public class ElasticsearchIndexService {
         this.chatMemberSearchRepository = chatMemberSearchRepository;
         this.messageRepository = messageRepository;
         this.messageSearchRepository = messageSearchRepository;
-        this.indicesClient = indicesClient;
+        this.elasticsearchTemplate = elasticsearchTemplate;
     }
 
     @Async
@@ -119,22 +113,10 @@ public class ElasticsearchIndexService {
         JpaRepository<T, ID> jpaRepository,
         ElasticsearchRepository<T, ID> elasticsearchRepository
     ) {
-        String indexName = getIndexname(entityClass);
-        try {
-            if (indexName != null) {
-                indicesClient.delete(Requests.deleteIndexRequest(indexName), RequestOptions.DEFAULT);
-                indicesClient.create(new CreateIndexRequest(indexName), RequestOptions.DEFAULT);
-            } else {
-                log.warn("Index for class : {} does not exist", entityClass);
-            }
-        } catch (IOException e) {
-            // Do nothing. Index was already concurrently recreated by some other service.
-        }
-        try {
-            indicesClient.putMapping(new PutMappingRequest(indexName), RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            // Do nothing. Index was already concurrently recreated by some other service.
-        }
+        final IndexOperations indexOperations = elasticsearchTemplate.indexOps(entityClass);
+        indexOperations.delete();
+        indexOperations.create();
+        indexOperations.putMapping();
         if (jpaRepository.count() > 0) {
             // if a JHipster entity field is the owner side of a many-to-many relationship, it should be loaded manually
             List<Method> relationshipGetters = Arrays

@@ -38,7 +38,7 @@ public class ElasticsearchIndexResource {
         elasticsearchIndexService.reindexAll();
         return ResponseEntity
             .accepted()
-            .headers(HeaderUtil.createAlert("elasticsearch.reindex.accepted", "elasticsearch.reindex.accepted", null))
+            .headers(HeaderUtil.createAlert("elasticsearch.reindex.accepted", "elasticsearch.reindex.accepted", "null"))
             .build();
     }
 }
