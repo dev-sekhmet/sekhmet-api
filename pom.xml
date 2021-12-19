@@ -429,6 +429,9 @@
                     <configuration>
                         <tagNameFormat>v{project.version}</tagNameFormat>
                         <arguments>-DskipTests</arguments>
+                        <checkModificationExcludes>
+                            <checkModificationExclude>package-lock.json</checkModificationExclude>
+                        </checkModificationExcludes>
                     </configuration>
                 </plugin>
                 <plugin>
