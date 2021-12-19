@@ -431,6 +431,7 @@
                         <arguments>-DskipTests</arguments>
                         <checkModificationExcludes>
                             <checkModificationExclude>package-lock.json</checkModificationExclude>
+                            <checkModificationExclude>mvnw</checkModificationExclude>
                         </checkModificationExcludes>
                     </configuration>
                 </plugin>
