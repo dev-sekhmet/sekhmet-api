@@ -40,3 +40,9 @@ jobs:
           fi
       - name: Package application
         run: npm run java:jar:prod
+      - name: Jar file
+        uses: actions/upload-artifact@v2
+        with:
+          name: JarFile
+          path: target/sekhmet*.jar
+          retention-days: 30
