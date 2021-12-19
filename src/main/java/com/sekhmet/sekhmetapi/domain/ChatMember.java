@@ -5,7 +5,7 @@ import com.sekhmet.sekhmetapi.domain.enumeration.ChatMemberScope;
 import java.io.Serializable;
 import java.util.UUID;
 import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -34,6 +34,11 @@ public class ChatMember implements Serializable {
     @Column(name = "scope", nullable = false)
     @Field(type = FieldType.Object, enabled = false)
     private ChatMemberScope scope;
+
+    @OneToOne
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
     @ManyToOne
     @JsonIgnoreProperties(value = { "members", "messsages" }, allowSetters = true)
@@ -73,6 +78,14 @@ public class ChatMember implements Serializable {
 
     public void setChat(Chat chat) {
         this.chat = chat;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public ChatMember chat(Chat chat) {

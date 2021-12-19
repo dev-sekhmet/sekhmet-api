@@ -5,7 +5,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.UUID;
 import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -68,6 +68,11 @@ public class Message implements Serializable {
     @ManyToOne
     @JsonIgnoreProperties(value = { "members", "messsages" }, allowSetters = true)
     private Chat chat;
+
+    @OneToOne
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -197,6 +202,14 @@ public class Message implements Serializable {
         return this;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public void setPending(Boolean pending) {
         this.pending = pending;
     }
@@ -247,6 +260,7 @@ public class Message implements Serializable {
             ", sent='" + getSent() + "'" +
             ", received='" + getReceived() + "'" +
             ", pending='" + getPending() + "'" +
+            ", user='" + getUser() + "'" +
             "}";
     }
 }
