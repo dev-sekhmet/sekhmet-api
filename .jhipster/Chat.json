@@ -1,4 +1,5 @@
 {
+  "name": "Chat",
   "fields": [
     {
       "fieldName": "guid",
@@ -15,25 +16,27 @@
     }
   ],
   "relationships": [
-
     {
-      "relationshipName": "messages",
-      "otherEntityName": "message",
       "relationshipType": "one-to-many",
+      "otherEntityName": "chatMember",
       "otherEntityRelationshipName": "chat",
-      "otherEntity": "[Message Entity]",
-      "otherEntityField": "id",
-      "ownerSide": false,
-      "collection": true,
-      "otherSideReferenceExists": false,
-      "otherEntityIsEmbedded": false
+      "relationshipName": "members"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "message",
+      "otherEntityRelationshipName": "chat",
+      "relationshipName": "messsages"
     }
   ],
-  "service": "serviceClass",
+  "entityTableName": "chat",
   "dto": "no",
+  "pagination": "no",
+  "service": "no",
   "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
   "readOnly": false,
-  "pagination": "pagination",
-  "name": "Chat",
-  "changelogDate": "20211207191310"
+  "embedded": false,
+  "applications": "*",
+  "changelogDate": "20211219072617"
 }

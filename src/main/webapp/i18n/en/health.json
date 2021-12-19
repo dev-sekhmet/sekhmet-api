@@ -16,7 +16,8 @@
       "livenessState": "Liveness state",
       "readinessState": "Readiness state",
       "ping": "Application",
-      "r2dbc": "Database"
+      "elasticsearch": "Elasticsearch",
+      "db": "Database"
     },
     "table": {
       "service": "Service name",

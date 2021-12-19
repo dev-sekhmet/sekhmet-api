@@ -20,7 +20,7 @@ export const ChatMemberDeleteDialog = (props: RouteComponentProps<{ id: string }
   const updateSuccess = useAppSelector(state => state.chatMember.updateSuccess);
 
   const handleClose = () => {
-    props.history.push('/chat-member');
+    props.history.push('/chat-member' + props.location.search);
   };
 
   useEffect(() => {
@@ -39,8 +39,8 @@ export const ChatMemberDeleteDialog = (props: RouteComponentProps<{ id: string }
       <ModalHeader toggle={handleClose} data-cy="chatMemberDeleteDialogHeading">
         <Translate contentKey="entity.delete.title">Confirm delete operation</Translate>
       </ModalHeader>
-      <ModalBody id="sekhmetApp.chatMember.delete.question">
-        <Translate contentKey="sekhmetApp.chatMember.delete.question" interpolate={{ id: chatMemberEntity.id }}>
+      <ModalBody id="sekhmetApiApp.chatMember.delete.question">
+        <Translate contentKey="sekhmetApiApp.chatMember.delete.question" interpolate={{ id: chatMemberEntity.id }}>
           Are you sure you want to delete this ChatMember?
         </Translate>
       </ModalBody>

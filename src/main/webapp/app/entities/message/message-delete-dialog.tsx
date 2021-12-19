@@ -39,8 +39,8 @@ export const MessageDeleteDialog = (props: RouteComponentProps<{ id: string }>) 
       <ModalHeader toggle={handleClose} data-cy="messageDeleteDialogHeading">
         <Translate contentKey="entity.delete.title">Confirm delete operation</Translate>
       </ModalHeader>
-      <ModalBody id="sekhmetApp.message.delete.question">
-        <Translate contentKey="sekhmetApp.message.delete.question" interpolate={{ id: messageEntity.id }}>
+      <ModalBody id="sekhmetApiApp.message.delete.question">
+        <Translate contentKey="sekhmetApiApp.message.delete.question" interpolate={{ id: messageEntity.id }}>
           Are you sure you want to delete this Message?
         </Translate>
       </ModalBody>

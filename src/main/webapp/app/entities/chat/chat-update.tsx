@@ -20,7 +20,7 @@ export const ChatUpdate = (props: RouteComponentProps<{ id: string }>) => {
   const updating = useAppSelector(state => state.chat.updating);
   const updateSuccess = useAppSelector(state => state.chat.updateSuccess);
   const handleClose = () => {
-    props.history.push('/chat' + props.location.search);
+    props.history.push('/chat');
   };
 
   useEffect(() => {
@@ -61,8 +61,8 @@ export const ChatUpdate = (props: RouteComponentProps<{ id: string }>) => {
     <div>
       <Row className="justify-content-center">
         <Col md="8">
-          <h2 id="sekhmetApp.chat.home.createOrEditLabel" data-cy="ChatCreateUpdateHeading">
-            <Translate contentKey="sekhmetApp.chat.home.createOrEditLabel">Create or edit a Chat</Translate>
+          <h2 id="sekhmetApiApp.chat.home.createOrEditLabel" data-cy="ChatCreateUpdateHeading">
+            <Translate contentKey="sekhmetApiApp.chat.home.createOrEditLabel">Create or edit a Chat</Translate>
           </h2>
         </Col>
       </Row>
@@ -83,7 +83,7 @@ export const ChatUpdate = (props: RouteComponentProps<{ id: string }>) => {
                 />
               ) : null}
               <ValidatedField
-                label={translate('sekhmetApp.chat.guid')}
+                label={translate('sekhmetApiApp.chat.guid')}
                 id="chat-guid"
                 name="guid"
                 data-cy="guid"
@@ -92,8 +92,8 @@ export const ChatUpdate = (props: RouteComponentProps<{ id: string }>) => {
                   required: { value: true, message: translate('entity.validation.required') },
                 }}
               />
-              <ValidatedField label={translate('sekhmetApp.chat.icon')} id="chat-icon" name="icon" data-cy="icon" type="text" />
-              <ValidatedField label={translate('sekhmetApp.chat.name')} id="chat-name" name="name" data-cy="name" type="text" />
+              <ValidatedField label={translate('sekhmetApiApp.chat.icon')} id="chat-icon" name="icon" data-cy="icon" type="text" />
+              <ValidatedField label={translate('sekhmetApiApp.chat.name')} id="chat-name" name="name" data-cy="name" type="text" />
               <Button tag={Link} id="cancel-save" data-cy="entityCreateCancelButton" to="/chat" replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />
                 &nbsp;

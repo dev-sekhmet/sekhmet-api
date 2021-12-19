@@ -1,9 +1,10 @@
+import { IChat } from 'app/shared/model/chat.model';
 import { ChatMemberScope } from 'app/shared/model/enumerations/chat-member-scope.model';
 
 export interface IChatMember {
-  id?: number;
-  uid?: string;
-  scope?: ChatMemberScope | null;
+  id?: string;
+  scope?: ChatMemberScope;
+  chat?: IChat | null;
 }
 
 export const defaultValue: Readonly<IChatMember> = {};

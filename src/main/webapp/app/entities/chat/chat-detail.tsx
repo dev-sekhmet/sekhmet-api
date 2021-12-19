@@ -20,7 +20,7 @@ export const ChatDetail = (props: RouteComponentProps<{ id: string }>) => {
     <Row>
       <Col md="8">
         <h2 data-cy="chatDetailsHeading">
-          <Translate contentKey="sekhmetApp.chat.detail.title">Chat</Translate>
+          <Translate contentKey="sekhmetApiApp.chat.detail.title">Chat</Translate>
         </h2>
         <dl className="jh-entity-details">
           <dt>
@@ -31,19 +31,19 @@ export const ChatDetail = (props: RouteComponentProps<{ id: string }>) => {
           <dd>{chatEntity.id}</dd>
           <dt>
             <span id="guid">
-              <Translate contentKey="sekhmetApp.chat.guid">Guid</Translate>
+              <Translate contentKey="sekhmetApiApp.chat.guid">Guid</Translate>
             </span>
           </dt>
           <dd>{chatEntity.guid}</dd>
           <dt>
             <span id="icon">
-              <Translate contentKey="sekhmetApp.chat.icon">Icon</Translate>
+              <Translate contentKey="sekhmetApiApp.chat.icon">Icon</Translate>
             </span>
           </dt>
           <dd>{chatEntity.icon}</dd>
           <dt>
             <span id="name">
-              <Translate contentKey="sekhmetApp.chat.name">Name</Translate>
+              <Translate contentKey="sekhmetApiApp.chat.name">Name</Translate>
             </span>
           </dt>
           <dd>{chatEntity.name}</dd>

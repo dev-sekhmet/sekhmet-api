@@ -11,16 +11,21 @@ const initialState: EntityState<IChat> = {
   entities: [],
   entity: defaultValue,
   updating: false,
-  totalItems: 0,
   updateSuccess: false,
 };
 
 const apiUrl = 'api/chats';
+const apiSearchUrl = 'api/_search/chats';
 
 // Actions
 
+export const searchEntities = createAsyncThunk('chat/search_entity', async ({ query, page, size, sort }: IQueryParams) => {
+  const requestUrl = `${apiSearchUrl}?query=${query}`;
+  return axios.get<IChat[]>(requestUrl);
+});
+
 export const getEntities = createAsyncThunk('chat/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
-  const requestUrl = `${apiUrl}${sort ? `?page=${page}&size=${size}&sort=${sort}&` : '?'}cacheBuster=${new Date().getTime()}`;
+  const requestUrl = `${apiUrl}?cacheBuster=${new Date().getTime()}`;
   return axios.get<IChat[]>(requestUrl);
 });
 
@@ -90,12 +95,11 @@ export const ChatSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = {};
       })
-      .addMatcher(isFulfilled(getEntities), (state, action) => {
+      .addMatcher(isFulfilled(getEntities, searchEntities), (state, action) => {
         return {
           ...state,
           loading: false,
           entities: action.payload.data,
-          totalItems: parseInt(action.payload.headers['x-total-count'], 10),
         };
       })
       .addMatcher(isFulfilled(createEntity, updateEntity, partialUpdateEntity), (state, action) => {
@@ -104,7 +108,7 @@ export const ChatSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = action.payload.data;
       })
-      .addMatcher(isPending(getEntities, getEntity), state => {
+      .addMatcher(isPending(getEntities, getEntity, searchEntities), state => {
         state.errorMessage = null;
         state.updateSuccess = false;
         state.loading = true;

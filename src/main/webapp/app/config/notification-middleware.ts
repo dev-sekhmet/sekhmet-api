@@ -70,7 +70,7 @@ export default () => next => action => {
                 }
                 // convert 'something[14].other[4].id' to 'something[].other[].id' so translations can be written to it
                 const convertedField = fieldError.field.replace(/\[\d*\]/g, '[]');
-                const fieldName = translate(`sekhmetApp.${fieldError.objectName}.${convertedField}`);
+                const fieldName = translate(`sekhmetApiApp.${fieldError.objectName}.${convertedField}`);
                 addErrorAlert(`Error on field "${fieldName}"`, `error.${fieldError.message}`, { fieldName });
               }
             } else if (typeof data === 'string' && data !== '') {

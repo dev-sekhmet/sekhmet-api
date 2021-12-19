@@ -1,7 +1,7 @@
 {
   "generator-jhipster:7.4.1": {
     "promptValues": {
-      "packageName": "com.sekhmet.api",
+      "packageName": "com.sekhmet.sekhmetapi",
       "nativeLanguage": "en"
     }
   }

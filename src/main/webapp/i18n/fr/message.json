@@ -1,11 +1,12 @@
 {
-  "sekhmetApp": {
+  "sekhmetApiApp": {
     "message": {
       "home": {
         "title": "Messages",
         "refreshListLabel": "Actualiser la liste",
         "createLabel": "Créer un nouveau Message",
         "createOrEditLabel": "Créer ou éditer un Message",
+        "search": "Recherche pour Message",
         "notFound": "Aucun Message trouvé"
       },
       "created": "Un nouveau Message a été créé avec l'identifiant {{ param }}",
@@ -17,8 +18,8 @@
       "detail": {
         "title": "Message"
       },
-      "id": "ID",
-      "uid": "Uid",
+      "id": "Id",
+      "text": "Text",
       "createdAt": "Created At",
       "image": "Image",
       "video": "Video",
@@ -26,7 +27,8 @@
       "system": "System",
       "sent": "Sent",
       "received": "Received",
-      "pending": "Pending"
+      "pending": "Pending",
+      "chat": "Chat"
     }
   }
 }

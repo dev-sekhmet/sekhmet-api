@@ -4,6 +4,8 @@ import { Button, Row, Col, FormText } from 'reactstrap';
 import { isNumber, Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { IChat } from 'app/shared/model/chat.model';
+import { getEntities as getChats } from 'app/entities/chat/chat.reducer';
 import { getEntity, updateEntity, createEntity, reset } from './message.reducer';
 import { IMessage } from 'app/shared/model/message.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
@@ -15,6 +17,7 @@ export const MessageUpdate = (props: RouteComponentProps<{ id: string }>) => {
 
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
+  const chats = useAppSelector(state => state.chat.entities);
   const messageEntity = useAppSelector(state => state.message.entity);
   const loading = useAppSelector(state => state.message.loading);
   const updating = useAppSelector(state => state.message.updating);
@@ -29,6 +32,8 @@ export const MessageUpdate = (props: RouteComponentProps<{ id: string }>) => {
     } else {
       dispatch(getEntity(props.match.params.id));
     }
+
+    dispatch(getChats({}));
   }, []);
 
   useEffect(() => {
@@ -41,6 +46,7 @@ export const MessageUpdate = (props: RouteComponentProps<{ id: string }>) => {
     const entity = {
       ...messageEntity,
       ...values,
+      chat: chats.find(it => it.id.toString() === values.chat.toString()),
     };
 
     if (isNew) {
@@ -55,14 +61,15 @@ export const MessageUpdate = (props: RouteComponentProps<{ id: string }>) => {
       ? {}
       : {
           ...messageEntity,
+          chat: messageEntity?.chat?.id,
         };
 
   return (
     <div>
       <Row className="justify-content-center">
         <Col md="8">
-          <h2 id="sekhmetApp.message.home.createOrEditLabel" data-cy="MessageCreateUpdateHeading">
-            <Translate contentKey="sekhmetApp.message.home.createOrEditLabel">Create or edit a Message</Translate>
+          <h2 id="sekhmetApiApp.message.home.createOrEditLabel" data-cy="MessageCreateUpdateHeading">
+            <Translate contentKey="sekhmetApiApp.message.home.createOrEditLabel">Create or edit a Message</Translate>
           </h2>
         </Col>
       </Row>
@@ -78,35 +85,41 @@ export const MessageUpdate = (props: RouteComponentProps<{ id: string }>) => {
                   required
                   readOnly
                   id="message-id"
-                  label={translate('global.field.id')}
+                  label={translate('sekhmetApiApp.message.id')}
                   validate={{ required: true }}
                 />
               ) : null}
+              <ValidatedField label={translate('sekhmetApiApp.message.text')} id="message-text" name="text" data-cy="text" type="text" />
               <ValidatedField
-                label={translate('sekhmetApp.message.uid')}
-                id="message-uid"
-                name="uid"
-                data-cy="uid"
-                type="text"
-                validate={{
-                  required: { value: true, message: translate('entity.validation.required') },
-                }}
-              />
-              <ValidatedField
-                label={translate('sekhmetApp.message.createdAt')}
+                label={translate('sekhmetApiApp.message.createdAt')}
                 id="message-createdAt"
                 name="createdAt"
                 data-cy="createdAt"
                 type="date"
-                validate={{
-                  required: { value: true, message: translate('entity.validation.required') },
-                }}
               />
-              <ValidatedField label={translate('sekhmetApp.message.image')} id="message-image" name="image" data-cy="image" type="text" />
-              <ValidatedField label={translate('sekhmetApp.message.video')} id="message-video" name="video" data-cy="video" type="text" />
-              <ValidatedField label={translate('sekhmetApp.message.audio')} id="message-audio" name="audio" data-cy="audio" type="text" />
               <ValidatedField
-                label={translate('sekhmetApp.message.system')}
+                label={translate('sekhmetApiApp.message.image')}
+                id="message-image"
+                name="image"
+                data-cy="image"
+                type="text"
+              />
+              <ValidatedField
+                label={translate('sekhmetApiApp.message.video')}
+                id="message-video"
+                name="video"
+                data-cy="video"
+                type="text"
+              />
+              <ValidatedField
+                label={translate('sekhmetApiApp.message.audio')}
+                id="message-audio"
+                name="audio"
+                data-cy="audio"
+                type="text"
+              />
+              <ValidatedField
+                label={translate('sekhmetApiApp.message.system')}
                 id="message-system"
                 name="system"
                 data-cy="system"
@@ -114,7 +127,7 @@ export const MessageUpdate = (props: RouteComponentProps<{ id: string }>) => {
                 type="checkbox"
               />
               <ValidatedField
-                label={translate('sekhmetApp.message.sent')}
+                label={translate('sekhmetApiApp.message.sent')}
                 id="message-sent"
                 name="sent"
                 data-cy="sent"
@@ -122,7 +135,7 @@ export const MessageUpdate = (props: RouteComponentProps<{ id: string }>) => {
                 type="checkbox"
               />
               <ValidatedField
-                label={translate('sekhmetApp.message.received')}
+                label={translate('sekhmetApiApp.message.received')}
                 id="message-received"
                 name="received"
                 data-cy="received"
@@ -130,13 +143,23 @@ export const MessageUpdate = (props: RouteComponentProps<{ id: string }>) => {
                 type="checkbox"
               />
               <ValidatedField
-                label={translate('sekhmetApp.message.pending')}
+                label={translate('sekhmetApiApp.message.pending')}
                 id="message-pending"
                 name="pending"
                 data-cy="pending"
                 check
                 type="checkbox"
               />
+              <ValidatedField id="message-chat" name="chat" data-cy="chat" label={translate('sekhmetApiApp.message.chat')} type="select">
+                <option value="" key="0" />
+                {chats
+                  ? chats.map(otherEntity => (
+                      <option value={otherEntity.id} key={otherEntity.id}>
+                        {otherEntity.id}
+                      </option>
+                    ))
+                  : null}
+              </ValidatedField>
               <Button tag={Link} id="cancel-save" data-cy="entityCreateCancelButton" to="/message" replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />
                 &nbsp;

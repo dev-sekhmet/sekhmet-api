@@ -19,7 +19,8 @@ management:
     web:
       base-path: /management
       exposure:
-        include: ['configprops', 'env', 'health', 'info', 'jhimetrics', 'logfile', 'loggers', 'prometheus', 'threaddump', 'liquibase']
+        include:
+          ['configprops', 'env', 'health', 'info', 'jhimetrics', 'logfile', 'loggers', 'prometheus', 'threaddump', 'caches', 'liquibase']
   endpoint:
     health:
       show-details: when_authorized
@@ -66,7 +67,7 @@ management:
 
 spring:
   application:
-    name: sekhmet
+    name: sekhmetApi
   profiles:
     # The commented value for `active` can be replaced with valid Spring profiles to load.
     # Otherwise, it will be filled in by maven when building the JAR file
@@ -80,19 +81,43 @@ spring:
         #- tls
   jmx:
     enabled: false
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: deferred
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+      hibernate.id.new_generator_mappings: true
+      hibernate.connection.provider_disables_autocommit: true
+      hibernate.cache.use_second_level_cache: true
+      hibernate.cache.use_query_cache: false
+      hibernate.generate_statistics: false
+      # modify batch size as necessary
+      hibernate.jdbc.batch_size: 25
+      hibernate.order_inserts: true
+      hibernate.order_updates: true
+      hibernate.query.fail_on_pagination_over_collection_fetch: true
+      hibernate.query.in_clause_parameter_padding: true
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
   messages:
     basename: i18n/messages
   main:
     allow-bean-definition-overriding: true
   task:
     execution:
-      thread-name-prefix: sekhmet-task-
+      thread-name-prefix: sekhmet-api-task-
       pool:
         core-size: 2
         max-size: 50
         queue-capacity: 10000
     scheduling:
-      thread-name-prefix: sekhmet-scheduling-
+      thread-name-prefix: sekhmet-api-scheduling-
       pool:
         size: 2
   thymeleaf:
@@ -120,7 +145,7 @@ info:
 
 jhipster:
   clientApp:
-    name: 'sekhmetApp'
+    name: 'sekhmetApiApp'
   # By default CORS is disabled. Uncomment to enable.
   # cors:
   #   allowed-origins: "http://localhost:8100,http://localhost:9000"
@@ -130,12 +155,12 @@ jhipster:
   #   allow-credentials: true
   #   max-age: 1800
   mail:
-    from: sekhmet@localhost
+    from: sekhmetApi@localhost
   api-docs:
     default-include-pattern: ${server.servlet.context-path:}/api/.*
     management-include-pattern: ${server.servlet.context-path:}/management/.*
-    title: Sekhmet API
-    description: Sekhmet API documentation
+    title: Sekhmet Api API
+    description: Sekhmet Api API documentation
     version: 0.0.1
     terms-of-service-url:
     contact-name:

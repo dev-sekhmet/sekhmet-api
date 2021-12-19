@@ -16,8 +16,14 @@ const initialState: EntityState<IMessage> = {
 };
 
 const apiUrl = 'api/messages';
+const apiSearchUrl = 'api/_search/messages';
 
 // Actions
+
+export const searchEntities = createAsyncThunk('message/search_entity', async ({ query, page, size, sort }: IQueryParams) => {
+  const requestUrl = `${apiSearchUrl}?query=${query}${sort ? `&page=${page}&size=${size}&sort=${sort}` : ''}`;
+  return axios.get<IMessage[]>(requestUrl);
+});
 
 export const getEntities = createAsyncThunk('message/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
   const requestUrl = `${apiUrl}${sort ? `?page=${page}&size=${size}&sort=${sort}&` : '?'}cacheBuster=${new Date().getTime()}`;
@@ -90,7 +96,7 @@ export const MessageSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = {};
       })
-      .addMatcher(isFulfilled(getEntities), (state, action) => {
+      .addMatcher(isFulfilled(getEntities, searchEntities), (state, action) => {
         return {
           ...state,
           loading: false,
@@ -104,7 +110,7 @@ export const MessageSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = action.payload.data;
       })
-      .addMatcher(isPending(getEntities, getEntity), state => {
+      .addMatcher(isPending(getEntities, getEntity, searchEntities), state => {
         state.errorMessage = null;
         state.updateSuccess = false;
         state.loading = true;

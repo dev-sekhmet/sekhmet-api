@@ -17,7 +17,7 @@ logging:
   level:
     ROOT: INFO
     tech.jhipster: INFO
-    com.sekhmet.api: INFO
+    com.sekhmet.sekhmetapi: INFO
 
 management:
   metrics:
@@ -31,18 +31,26 @@ spring:
       enabled: false
     livereload:
       enabled: false
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://localhost:5432/sekhmetApi
+    username: sekhmetApi
+    password:
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+  jpa:
+    database-platform: tech.jhipster.domain.util.FixedPostgreSQL10Dialect
+  elasticsearch:
+    rest:
+      uris: http://localhost:9200
   # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
   liquibase:
     contexts: prod
-    url: jdbc:postgresql://localhost:5432/sekhmet
   mail:
     host: localhost
     port: 25
     username:
-    password:
-  r2dbc:
-    url: r2dbc:postgresql://localhost:5432/sekhmet
-    username: sekhmet
     password:
   thymeleaf:
     cache: true
@@ -58,7 +66,7 @@ spring:
 
 # ===================================================================
 # To enable TLS in production, generate a certificate using:
-# keytool -genkey -alias sekhmet -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
+# keytool -genkey -alias sekhmetapi -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
 #
 # You can also use Let's Encrypt:
 # https://maximilian-boehm.com/hp2121/Create-a-Java-Keystore-JKS-from-Let-s-Encrypt-Certificates.htm
@@ -93,6 +101,10 @@ jhipster:
   http:
     cache: # Used by the CachingHttpHeadersFilter
       timeToLiveInDays: 1461
+  cache: # Cache configuration
+    ehcache: # Ehcache configuration
+      time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
+      max-entries: 1000 # Number of objects in each cache entry
   security:
     authentication:
       jwt:
@@ -101,7 +113,7 @@ jhipster:
         # - In the JHipster Registry (which includes a Spring Cloud Config server)
         # - In a separate `application-prod.yml` file, in the same folder as your executable JAR file
         # - In the `JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET` environment variable
-        base64-secret: YzczZTVhY2Y1MmU3MzQxYjk5ZDUzNmQ3Y2IyOGUxOTcxNTlmZWEwYTNmZDcwMzg3MWNlMjE4YTM3YjkzMDA3YTZkMmYwOGE4OTk5ZDBiZWVkY2UzODA4NzgzNTdhMzJjYWJjODIzZDYyYTdmYTNhN2ZjZGNlOWQ2MzQ1NGRlOWU=
+        base64-secret: NGRkZTdhNzM3YzZkNDMwNzE1ZDAwMWIyYTdjNWMxN2VmYTI1YmU2NDg0NDllZTkwMmJkZDc5NGQzZGE5M2RkNGZmODk2MTczNDAxNWZjMDg2YjRiN2U1NGYxYjgzODg0YjFiZGU2ZWI0NzJhNGY1MTEyMjkyYmIwZTE5NTY2M2U=
         # Token is valid 24 hours
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000

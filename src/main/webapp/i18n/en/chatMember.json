@@ -1,11 +1,12 @@
 {
-  "sekhmetApp": {
+  "sekhmetApiApp": {
     "chatMember": {
       "home": {
         "title": "Chat Members",
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Chat Member",
         "createOrEditLabel": "Create or edit a Chat Member",
+        "search": "Search for Chat Member",
         "notFound": "No Chat Members found"
       },
       "created": "A new Chat Member is created with identifier {{ param }}",
@@ -17,9 +18,9 @@
       "detail": {
         "title": "Chat Member"
       },
-      "id": "ID",
-      "uid": "Uid",
-      "scope": "Scope"
+      "id": "Id",
+      "scope": "Scope",
+      "chat": "Chat"
     }
   }
 }

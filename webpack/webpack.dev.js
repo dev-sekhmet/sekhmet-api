@@ -55,6 +55,11 @@ module.exports = async options =>
           secure: false,
           changeOrigin: options.tls,
         },
+        {
+          context: ['/websocket'],
+          target: 'ws://127.0.0.1:8080',
+          ws: true,
+        },
       ],
       https: options.tls,
       historyApiFallback: true,
@@ -73,6 +78,7 @@ module.exports = async options =>
           port: 9000,
           proxy: {
             target: `http${options.tls ? 's' : ''}://localhost:9060`,
+            ws: true,
             proxyOptions: {
               changeOrigin: false, //pass the Host header to the backend unchanged  https://github.com/Browsersync/browser-sync/issues/430
             },
@@ -96,7 +102,7 @@ module.exports = async options =>
       ),
       new webpack.HotModuleReplacementPlugin(),
       new WebpackNotifierPlugin({
-        title: 'Sekhmet',
+        title: 'Sekhmet Api',
         contentImage: path.join(__dirname, 'logo-jhipster.png'),
       }),
     ].filter(Boolean),

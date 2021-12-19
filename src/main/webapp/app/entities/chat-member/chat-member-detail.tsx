@@ -20,27 +20,25 @@ export const ChatMemberDetail = (props: RouteComponentProps<{ id: string }>) => 
     <Row>
       <Col md="8">
         <h2 data-cy="chatMemberDetailsHeading">
-          <Translate contentKey="sekhmetApp.chatMember.detail.title">ChatMember</Translate>
+          <Translate contentKey="sekhmetApiApp.chatMember.detail.title">ChatMember</Translate>
         </h2>
         <dl className="jh-entity-details">
           <dt>
             <span id="id">
-              <Translate contentKey="global.field.id">ID</Translate>
+              <Translate contentKey="sekhmetApiApp.chatMember.id">Id</Translate>
             </span>
           </dt>
           <dd>{chatMemberEntity.id}</dd>
           <dt>
-            <span id="uid">
-              <Translate contentKey="sekhmetApp.chatMember.uid">Uid</Translate>
-            </span>
-          </dt>
-          <dd>{chatMemberEntity.uid}</dd>
-          <dt>
             <span id="scope">
-              <Translate contentKey="sekhmetApp.chatMember.scope">Scope</Translate>
+              <Translate contentKey="sekhmetApiApp.chatMember.scope">Scope</Translate>
             </span>
           </dt>
           <dd>{chatMemberEntity.scope}</dd>
+          <dt>
+            <Translate contentKey="sekhmetApiApp.chatMember.chat">Chat</Translate>
+          </dt>
+          <dd>{chatMemberEntity.chat ? chatMemberEntity.chat.id : ''}</dd>
         </dl>
         <Button tag={Link} to="/chat-member" replace color="info" data-cy="entityDetailsBackButton">
           <FontAwesomeIcon icon="arrow-left" />{' '}

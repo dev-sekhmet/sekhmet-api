@@ -4,6 +4,8 @@ import { Button, Row, Col, FormText } from 'reactstrap';
 import { isNumber, Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { IChat } from 'app/shared/model/chat.model';
+import { getEntities as getChats } from 'app/entities/chat/chat.reducer';
 import { getEntity, updateEntity, createEntity, reset } from './chat-member.reducer';
 import { IChatMember } from 'app/shared/model/chat-member.model';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
@@ -16,13 +18,14 @@ export const ChatMemberUpdate = (props: RouteComponentProps<{ id: string }>) => 
 
   const [isNew] = useState(!props.match.params || !props.match.params.id);
 
+  const chats = useAppSelector(state => state.chat.entities);
   const chatMemberEntity = useAppSelector(state => state.chatMember.entity);
   const loading = useAppSelector(state => state.chatMember.loading);
   const updating = useAppSelector(state => state.chatMember.updating);
   const updateSuccess = useAppSelector(state => state.chatMember.updateSuccess);
   const chatMemberScopeValues = Object.keys(ChatMemberScope);
   const handleClose = () => {
-    props.history.push('/chat-member');
+    props.history.push('/chat-member' + props.location.search);
   };
 
   useEffect(() => {
@@ -31,6 +34,8 @@ export const ChatMemberUpdate = (props: RouteComponentProps<{ id: string }>) => 
     } else {
       dispatch(getEntity(props.match.params.id));
     }
+
+    dispatch(getChats({}));
   }, []);
 
   useEffect(() => {
@@ -43,6 +48,7 @@ export const ChatMemberUpdate = (props: RouteComponentProps<{ id: string }>) => 
     const entity = {
       ...chatMemberEntity,
       ...values,
+      chat: chats.find(it => it.id.toString() === values.chat.toString()),
     };
 
     if (isNew) {
@@ -58,14 +64,15 @@ export const ChatMemberUpdate = (props: RouteComponentProps<{ id: string }>) => 
       : {
           scope: 'PARTICIPANT',
           ...chatMemberEntity,
+          chat: chatMemberEntity?.chat?.id,
         };
 
   return (
     <div>
       <Row className="justify-content-center">
         <Col md="8">
-          <h2 id="sekhmetApp.chatMember.home.createOrEditLabel" data-cy="ChatMemberCreateUpdateHeading">
-            <Translate contentKey="sekhmetApp.chatMember.home.createOrEditLabel">Create or edit a ChatMember</Translate>
+          <h2 id="sekhmetApiApp.chatMember.home.createOrEditLabel" data-cy="ChatMemberCreateUpdateHeading">
+            <Translate contentKey="sekhmetApiApp.chatMember.home.createOrEditLabel">Create or edit a ChatMember</Translate>
           </h2>
         </Col>
       </Row>
@@ -81,22 +88,12 @@ export const ChatMemberUpdate = (props: RouteComponentProps<{ id: string }>) => 
                   required
                   readOnly
                   id="chat-member-id"
-                  label={translate('global.field.id')}
+                  label={translate('sekhmetApiApp.chatMember.id')}
                   validate={{ required: true }}
                 />
               ) : null}
               <ValidatedField
-                label={translate('sekhmetApp.chatMember.uid')}
-                id="chat-member-uid"
-                name="uid"
-                data-cy="uid"
-                type="text"
-                validate={{
-                  required: { value: true, message: translate('entity.validation.required') },
-                }}
-              />
-              <ValidatedField
-                label={translate('sekhmetApp.chatMember.scope')}
+                label={translate('sekhmetApiApp.chatMember.scope')}
                 id="chat-member-scope"
                 name="scope"
                 data-cy="scope"
@@ -104,9 +101,25 @@ export const ChatMemberUpdate = (props: RouteComponentProps<{ id: string }>) => 
               >
                 {chatMemberScopeValues.map(chatMemberScope => (
                   <option value={chatMemberScope} key={chatMemberScope}>
-                    {translate('sekhmetApp.ChatMemberScope.' + chatMemberScope)}
+                    {translate('sekhmetApiApp.ChatMemberScope.' + chatMemberScope)}
                   </option>
                 ))}
+              </ValidatedField>
+              <ValidatedField
+                id="chat-member-chat"
+                name="chat"
+                data-cy="chat"
+                label={translate('sekhmetApiApp.chatMember.chat')}
+                type="select"
+              >
+                <option value="" key="0" />
+                {chats
+                  ? chats.map(otherEntity => (
+                      <option value={otherEntity.id} key={otherEntity.id}>
+                        {otherEntity.id}
+                      </option>
+                    ))
+                  : null}
               </ValidatedField>
               <Button tag={Link} id="cancel-save" data-cy="entityCreateCancelButton" to="/chat-member" replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />

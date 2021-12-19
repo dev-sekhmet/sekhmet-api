@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { Button, Table } from 'reactstrap';
-import { Translate, TextFormat, getSortState, JhiPagination, JhiItemCount } from 'react-jhipster';
+import { Button, Input, InputGroup, FormGroup, Form, Row, Col, Table } from 'reactstrap';
+import { Translate, translate, TextFormat, getSortState, JhiPagination, JhiItemCount } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { getEntities } from './message.reducer';
+import { searchEntities, getEntities } from './message.reducer';
 import { IMessage } from 'app/shared/model/message.model';
 import { APP_DATE_FORMAT, APP_LOCAL_DATE_FORMAT } from 'app/config/constants';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
@@ -14,6 +14,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 export const Message = (props: RouteComponentProps<{ url: string }>) => {
   const dispatch = useAppDispatch();
 
+  const [search, setSearch] = useState('');
   const [paginationState, setPaginationState] = useState(
     overridePaginationStateWithQueryParams(getSortState(props.location, ITEMS_PER_PAGE, 'id'), props.location.search)
   );
@@ -23,14 +24,54 @@ export const Message = (props: RouteComponentProps<{ url: string }>) => {
   const totalItems = useAppSelector(state => state.message.totalItems);
 
   const getAllEntities = () => {
-    dispatch(
-      getEntities({
-        page: paginationState.activePage - 1,
-        size: paginationState.itemsPerPage,
-        sort: `${paginationState.sort},${paginationState.order}`,
-      })
-    );
+    if (search) {
+      dispatch(
+        searchEntities({
+          query: search,
+          page: paginationState.activePage - 1,
+          size: paginationState.itemsPerPage,
+          sort: `${paginationState.sort},${paginationState.order}`,
+        })
+      );
+    } else {
+      dispatch(
+        getEntities({
+          page: paginationState.activePage - 1,
+          size: paginationState.itemsPerPage,
+          sort: `${paginationState.sort},${paginationState.order}`,
+        })
+      );
+    }
   };
+
+  const startSearching = e => {
+    if (search) {
+      setPaginationState({
+        ...paginationState,
+        activePage: 1,
+      });
+      dispatch(
+        searchEntities({
+          query: search,
+          page: paginationState.activePage - 1,
+          size: paginationState.itemsPerPage,
+          sort: `${paginationState.sort},${paginationState.order}`,
+        })
+      );
+    }
+    e.preventDefault();
+  };
+
+  const clear = () => {
+    setSearch('');
+    setPaginationState({
+      ...paginationState,
+      activePage: 1,
+    });
+    dispatch(getEntities({}));
+  };
+
+  const handleSearch = event => setSearch(event.target.value);
 
   const sortEntities = () => {
     getAllEntities();
@@ -42,7 +83,7 @@ export const Message = (props: RouteComponentProps<{ url: string }>) => {
 
   useEffect(() => {
     sortEntities();
-  }, [paginationState.activePage, paginationState.order, paginationState.sort]);
+  }, [paginationState.activePage, paginationState.order, paginationState.sort, search]);
 
   useEffect(() => {
     const params = new URLSearchParams(props.location.search);
@@ -82,53 +123,79 @@ export const Message = (props: RouteComponentProps<{ url: string }>) => {
   return (
     <div>
       <h2 id="message-heading" data-cy="MessageHeading">
-        <Translate contentKey="sekhmetApp.message.home.title">Messages</Translate>
+        <Translate contentKey="sekhmetApiApp.message.home.title">Messages</Translate>
         <div className="d-flex justify-content-end">
           <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
             <FontAwesomeIcon icon="sync" spin={loading} />{' '}
-            <Translate contentKey="sekhmetApp.message.home.refreshListLabel">Refresh List</Translate>
+            <Translate contentKey="sekhmetApiApp.message.home.refreshListLabel">Refresh List</Translate>
           </Button>
           <Link to={`${match.url}/new`} className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
             <FontAwesomeIcon icon="plus" />
             &nbsp;
-            <Translate contentKey="sekhmetApp.message.home.createLabel">Create new Message</Translate>
+            <Translate contentKey="sekhmetApiApp.message.home.createLabel">Create new Message</Translate>
           </Link>
         </div>
       </h2>
+      <Row>
+        <Col sm="12">
+          <Form onSubmit={startSearching}>
+            <FormGroup>
+              <InputGroup>
+                <Input
+                  type="text"
+                  name="search"
+                  defaultValue={search}
+                  onChange={handleSearch}
+                  placeholder={translate('sekhmetApiApp.message.home.search')}
+                />
+                <Button className="input-group-addon">
+                  <FontAwesomeIcon icon="search" />
+                </Button>
+                <Button type="reset" className="input-group-addon" onClick={clear}>
+                  <FontAwesomeIcon icon="trash" />
+                </Button>
+              </InputGroup>
+            </FormGroup>
+          </Form>
+        </Col>
+      </Row>
       <div className="table-responsive">
         {messageList && messageList.length > 0 ? (
           <Table responsive>
             <thead>
               <tr>
                 <th className="hand" onClick={sort('id')}>
-                  <Translate contentKey="sekhmetApp.message.id">ID</Translate> <FontAwesomeIcon icon="sort" />
+                  <Translate contentKey="sekhmetApiApp.message.id">Id</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
-                <th className="hand" onClick={sort('uid')}>
-                  <Translate contentKey="sekhmetApp.message.uid">Uid</Translate> <FontAwesomeIcon icon="sort" />
+                <th className="hand" onClick={sort('text')}>
+                  <Translate contentKey="sekhmetApiApp.message.text">Text</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
                 <th className="hand" onClick={sort('createdAt')}>
-                  <Translate contentKey="sekhmetApp.message.createdAt">Created At</Translate> <FontAwesomeIcon icon="sort" />
+                  <Translate contentKey="sekhmetApiApp.message.createdAt">Created At</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
                 <th className="hand" onClick={sort('image')}>
-                  <Translate contentKey="sekhmetApp.message.image">Image</Translate> <FontAwesomeIcon icon="sort" />
+                  <Translate contentKey="sekhmetApiApp.message.image">Image</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
                 <th className="hand" onClick={sort('video')}>
-                  <Translate contentKey="sekhmetApp.message.video">Video</Translate> <FontAwesomeIcon icon="sort" />
+                  <Translate contentKey="sekhmetApiApp.message.video">Video</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
                 <th className="hand" onClick={sort('audio')}>
-                  <Translate contentKey="sekhmetApp.message.audio">Audio</Translate> <FontAwesomeIcon icon="sort" />
+                  <Translate contentKey="sekhmetApiApp.message.audio">Audio</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
                 <th className="hand" onClick={sort('system')}>
-                  <Translate contentKey="sekhmetApp.message.system">System</Translate> <FontAwesomeIcon icon="sort" />
+                  <Translate contentKey="sekhmetApiApp.message.system">System</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
                 <th className="hand" onClick={sort('sent')}>
-                  <Translate contentKey="sekhmetApp.message.sent">Sent</Translate> <FontAwesomeIcon icon="sort" />
+                  <Translate contentKey="sekhmetApiApp.message.sent">Sent</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
                 <th className="hand" onClick={sort('received')}>
-                  <Translate contentKey="sekhmetApp.message.received">Received</Translate> <FontAwesomeIcon icon="sort" />
+                  <Translate contentKey="sekhmetApiApp.message.received">Received</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
                 <th className="hand" onClick={sort('pending')}>
-                  <Translate contentKey="sekhmetApp.message.pending">Pending</Translate> <FontAwesomeIcon icon="sort" />
+                  <Translate contentKey="sekhmetApiApp.message.pending">Pending</Translate> <FontAwesomeIcon icon="sort" />
+                </th>
+                <th>
+                  <Translate contentKey="sekhmetApiApp.message.chat">Chat</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
                 <th />
               </tr>
@@ -141,7 +208,7 @@ export const Message = (props: RouteComponentProps<{ url: string }>) => {
                       {message.id}
                     </Button>
                   </td>
-                  <td>{message.uid}</td>
+                  <td>{message.text}</td>
                   <td>{message.createdAt ? <TextFormat type="date" value={message.createdAt} format={APP_LOCAL_DATE_FORMAT} /> : null}</td>
                   <td>{message.image}</td>
                   <td>{message.video}</td>
@@ -150,6 +217,7 @@ export const Message = (props: RouteComponentProps<{ url: string }>) => {
                   <td>{message.sent ? 'true' : 'false'}</td>
                   <td>{message.received ? 'true' : 'false'}</td>
                   <td>{message.pending ? 'true' : 'false'}</td>
+                  <td>{message.chat ? <Link to={`chat/${message.chat.id}`}>{message.chat.id}</Link> : ''}</td>
                   <td className="text-end">
                     <div className="btn-group flex-btn-group-container">
                       <Button tag={Link} to={`${match.url}/${message.id}`} color="info" size="sm" data-cy="entityDetailsButton">
@@ -191,7 +259,7 @@ export const Message = (props: RouteComponentProps<{ url: string }>) => {
         ) : (
           !loading && (
             <div className="alert alert-warning">
-              <Translate contentKey="sekhmetApp.message.home.notFound">No Messages found</Translate>
+              <Translate contentKey="sekhmetApiApp.message.home.notFound">No Messages found</Translate>
             </div>
           )
         )}

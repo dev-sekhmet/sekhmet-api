@@ -1,28 +1,41 @@
 # This configuration is intended for development purpose, it's **your** responsibility to harden it for production
 version: '3.8'
 services:
-  sekhmet-app:
-    image: sekhmet
+  sekhmetapi-app:
+    image: sekhmetapi
     environment:
       - _JAVA_OPTIONS=-Xmx512m -Xms256m
       - SPRING_PROFILES_ACTIVE=prod,api-docs
       - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
-      - SPRING_R2DBC_URL=r2dbc:postgresql://sekhmet-postgresql:5432/sekhmet
-      - SPRING_LIQUIBASE_URL=jdbc:postgresql://sekhmet-postgresql:5432/sekhmet
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://sekhmetapi-postgresql:5432/sekhmetApi
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://sekhmetapi-postgresql:5432/sekhmetApi
       - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
+      - SPRING_ELASTICSEARCH_REST_URIS=http://sekhmetapi-elasticsearch:9200
     # If you want to expose these ports outside your dev PC,
     # remove the "127.0.0.1:" prefix
     ports:
       - 127.0.0.1:8080:8080
-  sekhmet-postgresql:
+  sekhmetapi-postgresql:
     image: postgres:13.5
     # volumes:
-    #   - ~/volumes/jhipster/sekhmet/postgresql/:/var/lib/postgresql/data/
+    #   - ~/volumes/jhipster/sekhmetApi/postgresql/:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER=sekhmet
+      - POSTGRES_USER=sekhmetApi
       - POSTGRES_PASSWORD=
       - POSTGRES_HOST_AUTH_METHOD=trust
     # If you want to expose these ports outside your dev PC,
     # remove the "127.0.0.1:" prefix
     ports:
       - 127.0.0.1:5432:5432
+  sekhmetapi-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+    # volumes:
+    #   - ~/volumes/jhipster/sekhmetApi/elasticsearch/:/usr/share/elasticsearch/data/
+    # If you want to expose these ports outside your dev PC,
+    # remove the "127.0.0.1:" prefix
+    ports:
+      - 127.0.0.1:9200:9200
+      - 127.0.0.1:9300:9300
+    environment:
+      - 'ES_JAVA_OPTS=-Xms1024m -Xmx1024m'
+      - 'discovery.type=single-node'

@@ -1,11 +1,12 @@
 {
-  "sekhmetApp": {
+  "sekhmetApiApp": {
     "chat": {
       "home": {
         "title": "Chats",
         "refreshListLabel": "Actualiser la liste",
         "createLabel": "Créer un nouveau Chat",
         "createOrEditLabel": "Créer ou éditer un Chat",
+        "search": "Recherche pour Chat",
         "notFound": "Aucun Chat trouvé"
       },
       "created": "Un nouveau Chat a été créé avec l'identifiant {{ param }}",
@@ -20,7 +21,9 @@
       "id": "ID",
       "guid": "Guid",
       "icon": "Icon",
-      "name": "Name"
+      "name": "Name",
+      "members": "Members",
+      "messsages": "Messsages"
     }
   }
 }

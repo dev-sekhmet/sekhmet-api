@@ -1,14 +1,18 @@
 {
+  "name": "Message",
   "fields": [
     {
-      "fieldName": "uid",
+      "fieldName": "id",
       "fieldType": "UUID",
       "fieldValidateRules": ["required", "unique"]
     },
     {
+      "fieldName": "text",
+      "fieldType": "String"
+    },
+    {
       "fieldName": "createdAt",
-      "fieldType": "LocalDate",
-      "fieldValidateRules": ["required"]
+      "fieldType": "LocalDate"
     },
     {
       "fieldName": "image",
@@ -39,12 +43,22 @@
       "fieldType": "Boolean"
     }
   ],
-  "relationships": [],
-  "service": "serviceClass",
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "chat",
+      "otherEntityRelationshipName": "messsages",
+      "relationshipName": "chat"
+    }
+  ],
+  "entityTableName": "message",
   "dto": "no",
-  "jpaMetamodelFiltering": false,
-  "readOnly": false,
   "pagination": "pagination",
-  "name": "Message",
-  "changelogDate": "20211207191934"
+  "service": "no",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "applications": "*",
+  "changelogDate": "20211219072618"
 }
