@@ -34,8 +34,8 @@ jobs:
             [
               {
                 "id": "sekhmet-api-snapshots",
-                "username": "${secrets..ARTIFACTORY_USERNAME_REF}",
-                "password": "${secrets..ARTIFACTORY_PASSWORD_REF}"
+                "username": "${secrets.ARTIFACTORY_USERNAME_REF}",
+                "password": "${secrets.ARTIFACTORY_PASSWORD_REF}"
               }
             ]
 
