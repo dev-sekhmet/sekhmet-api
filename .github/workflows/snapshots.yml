@@ -31,13 +31,13 @@ jobs:
         uses: whelk-io/maven-settings-xml-action@v11
         with:
           servers: |
-            "[
+            [
               {
                 "id": "sekhmet-api-snapshots",
                 "username": "${secrets..ARTIFACTORY_USERNAME_REF}",
                 "password": "${secrets..ARTIFACTORY_PASSWORD_REF}"
               }
-            ]"
+            ]
 
       - name: Push Snapshot
         run: npm run java:jar:prod
