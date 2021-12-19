@@ -42,7 +42,7 @@ jobs:
               }
             ]
 
-      - name: Push Snapshot
+      - name: Push Release
         run: |
           chmod +x mvnw
           npm run java:jar:push:release
