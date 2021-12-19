@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import javax.persistence.*;
-import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -23,7 +22,6 @@ public class Chat implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @NotNull
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)

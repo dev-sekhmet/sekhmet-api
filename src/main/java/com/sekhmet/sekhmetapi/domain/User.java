@@ -31,7 +31,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @NotNull
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)

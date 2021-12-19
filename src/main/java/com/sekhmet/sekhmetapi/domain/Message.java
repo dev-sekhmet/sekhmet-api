@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.UUID;
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -22,7 +21,6 @@ public class Message implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @NotNull
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)

@@ -10,13 +10,13 @@
 
         <addForeignKeyConstraint baseColumnNames="chat_id"
                                  baseTableName="chat_member"
-                                 constraintName="fk_chat_member__chat_id"
+                                 constraintName="fk_chat_member_chat"
                                  referencedColumnNames="id"
                                  referencedTableName="chat"/>
 
         <addForeignKeyConstraint baseColumnNames="user_id"
                                  baseTableName="chat_member"
-                                 constraintName="fk_user_id"
+                                 constraintName="fk_chat_member_user"
                                  referencedColumnNames="id"
                                  referencedTableName="skh_user"/>
     </changeSet>

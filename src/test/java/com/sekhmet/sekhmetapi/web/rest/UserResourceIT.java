@@ -2,7 +2,6 @@ package com.sekhmet.sekhmetapi.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -13,7 +12,6 @@ import com.sekhmet.sekhmetapi.repository.UserRepository;
 import com.sekhmet.sekhmetapi.repository.search.UserSearchRepository;
 import com.sekhmet.sekhmetapi.security.AuthoritiesConstants;
 import com.sekhmet.sekhmetapi.service.dto.AdminUserDTO;
-import com.sekhmet.sekhmetapi.service.dto.UserDTO;
 import com.sekhmet.sekhmetapi.service.mapper.UserMapper;
 import com.sekhmet.sekhmetapi.web.rest.vm.ManagedUserVM;
 import java.time.Instant;
@@ -95,11 +93,11 @@ class UserResourceIT {
 
     /**
      * Create a User.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which has a required relationship to the User entity.
      */
-    public static User createEntity(EntityManager em) {
+    public static User createEntity() {
         User user = new User();
         user.setLogin(DEFAULT_LOGIN + RandomStringUtils.randomAlphabetic(5));
         user.setPassword(RandomStringUtils.random(60));
@@ -115,8 +113,8 @@ class UserResourceIT {
     /**
      * Setups the database with one user.
      */
-    public static User initTestUser(UserRepository userRepository, EntityManager em) {
-        User user = createEntity(em);
+    public static User initTestUser() {
+        User user = createEntity();
         user.setLogin(DEFAULT_LOGIN);
         user.setEmail(DEFAULT_EMAIL);
         return user;
@@ -124,7 +122,7 @@ class UserResourceIT {
 
     @BeforeEach
     public void initTest() {
-        user = initTestUser(userRepository, em);
+        user = initTestUser();
     }
 
     @Test

@@ -8,8 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.sekhmet.sekhmetapi.IntegrationTest;
 import com.sekhmet.sekhmetapi.domain.ChatMember;
+import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.domain.enumeration.ChatMemberScope;
 import com.sekhmet.sekhmetapi.repository.ChatMemberRepository;
+import com.sekhmet.sekhmetapi.repository.UserRepository;
 import com.sekhmet.sekhmetapi.repository.search.ChatMemberSearchRepository;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +20,6 @@ import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -62,11 +63,14 @@ class ChatMemberResourceIT {
     @Autowired
     private MockMvc restChatMemberMockMvc;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private ChatMember chatMember;
 
     /**
      * Create an entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
@@ -77,7 +81,7 @@ class ChatMemberResourceIT {
 
     /**
      * Create an updated entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
@@ -89,6 +93,12 @@ class ChatMemberResourceIT {
     @BeforeEach
     public void initTest() {
         chatMember = createEntity(em);
+        setUser();
+    }
+
+    private void setUser() {
+        User user = userRepository.saveAndFlush(UserResourceIT.initTestUser());
+        chatMember.setUser(user);
     }
 
     @Test

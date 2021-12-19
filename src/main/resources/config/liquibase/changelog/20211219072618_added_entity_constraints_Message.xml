@@ -16,7 +16,7 @@
 
         <addForeignKeyConstraint baseColumnNames="user_id"
                                  baseTableName="message"
-                                 constraintName="fk_user_id"
+                                 constraintName="fk_message_user"
                                  referencedColumnNames="id"
                                  referencedTableName="skh_user"/>
     </changeSet>

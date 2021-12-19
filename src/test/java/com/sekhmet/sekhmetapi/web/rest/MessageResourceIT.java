@@ -8,7 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.sekhmet.sekhmetapi.IntegrationTest;
 import com.sekhmet.sekhmetapi.domain.Message;
+import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.repository.MessageRepository;
+import com.sekhmet.sekhmetapi.repository.UserRepository;
 import com.sekhmet.sekhmetapi.repository.search.MessageSearchRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -19,7 +21,6 @@ import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -89,9 +90,12 @@ class MessageResourceIT {
 
     private Message message;
 
+    @Autowired
+    private UserRepository userRepository;
+
     /**
      * Create an entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
@@ -132,6 +136,7 @@ class MessageResourceIT {
     @BeforeEach
     public void initTest() {
         message = createEntity(em);
+        setUser();
     }
 
     @Test
@@ -542,5 +547,10 @@ class MessageResourceIT {
             .andExpect(jsonPath("$.[*].sent").value(hasItem(DEFAULT_SENT.booleanValue())))
             .andExpect(jsonPath("$.[*].received").value(hasItem(DEFAULT_RECEIVED.booleanValue())))
             .andExpect(jsonPath("$.[*].pending").value(hasItem(DEFAULT_PENDING.booleanValue())));
+    }
+
+    private void setUser() {
+        User user = userRepository.saveAndFlush(UserResourceIT.initTestUser());
+        message.setUser(user);
     }
 }
