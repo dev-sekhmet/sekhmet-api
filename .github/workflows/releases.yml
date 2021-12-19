@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [ labeled ]
     branches:
-      - release/v[1-9]+.[0-9]+.[x|0-9]+
+      - "release/v[1-9]+.[0-9]+.[x|0-9]+"
 jobs:
   pipeline:
     name: sekhmetApi Release push
