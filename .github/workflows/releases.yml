@@ -35,7 +35,7 @@ jobs:
           servers: |
             [
               {
-                "id": "sekhmet-api-snapshots",
+                "id": "sekhmet-api-releases",
                 "username": "${{ secrets.ARTIFACTORY_USERNAME_REF }}",
                 "password": "${{ secrets.ARTIFACTORY_PASSWORD_REF }}"
               }
