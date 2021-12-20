@@ -41,6 +41,8 @@
     "java:jar": "./mvnw -ntp verify -DskipTests --batch-mode",
     "java:jar:dev": "npm run java:jar -- -Pdev,webapp",
     "java:jar:prod": "npm run java:jar -- -Pprod",
+    "java:jar:push": "./mvnw -ntp deploy -DskipTests -Pprod --batch-mode",
+    "java:jar:push:release": "./mvnw -ntp release:prepare release:perform -Pprod --batch-mode",
     "java:war": "./mvnw -ntp verify -DskipTests --batch-mode -Pwar",
     "java:war:dev": "npm run java:war -- -Pdev,webapp",
     "java:war:prod": "npm run java:war -- -Pprod",
