@@ -4,7 +4,7 @@
 
     <groupId>com.sekhmet.sekhmetapi</groupId>
     <artifactId>sekhmet-api</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Sekhmet Api</name>
     <description>Description for sekhmetApi</description>
@@ -32,7 +32,7 @@
         <connection>scm:git:https://github.com/dev-sekhmet/sekhmet-api.git</connection>
         <url>https://github.com/dev-sekhmet/sekhmet-api</url>
         <developerConnection>scm:git:https://github.com/dev-sekhmet/sekhmet-api.git</developerConnection>
-      <tag>v0.0.1-SNAPSHOT</tag>
+      <tag>v{project.version}</tag>
   </scm>
     <!-- jhipster-needle-distribution-management -->
 
