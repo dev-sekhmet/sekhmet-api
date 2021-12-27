@@ -1,7 +1,5 @@
 package com.sekhmet.sekhmetapi.service;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
 import com.sekhmet.sekhmetapi.domain.Message;
 import com.sekhmet.sekhmetapi.repository.MessageRepository;
 import com.sekhmet.sekhmetapi.repository.search.MessageSearchRepository;
@@ -141,5 +139,9 @@ public class MessageService {
     public Page<Message> search(String query, Pageable pageable) {
         log.debug("Request to search for a page of Messages for query {}", query);
         return messageSearchRepository.search(query, pageable);
+    }
+
+    public Page<Message> getMessages(String userLogin, String currentuserLogin, Pageable pageable) {
+        return null;
     }
 }

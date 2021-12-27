@@ -4,7 +4,8 @@
       "title": "Users",
       "refreshListLabel": "Refresh list",
       "createLabel": "Create a new user",
-      "createOrEditLabel": "Create or edit a user"
+      "createOrEditLabel": "Create or edit a user",
+      "discussewith": "chat with {{ username }}"
     },
     "created": "A new user is created with identifier {{ param }}",
     "updated": "A user is updated with identifier {{ param }}",
@@ -15,6 +16,9 @@
     "detail": {
       "title": "User"
     },
+    "action": {
+      "sendMessage": "Send"
+    },
     "login": "Login",
     "firstName": "First name",
     "lastName": "Last name",
@@ -24,6 +28,7 @@
     "profiles": "Profiles",
     "langKey": "Language",
     "createdBy": "Created by",
+    "message": "Message",
     "createdDate": "Created date",
     "lastModifiedBy": "Modified by",
     "lastModifiedDate": "Modified date"

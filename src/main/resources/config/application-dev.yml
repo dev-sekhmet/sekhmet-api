@@ -53,7 +53,7 @@ spring:
     database-platform: tech.jhipster.domain.util.FixedPostgreSQL10Dialect
   elasticsearch:
     rest:
-      uris: http://localhost:9200
+      uris: localhost:9200
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker

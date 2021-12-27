@@ -4,14 +4,14 @@ import thunk from 'redux-thunk';
 import sinon from 'sinon';
 
 import userManagement, {
-  getUsers,
-  getUsersAsAdmin,
+  createUser,
+  deleteUser,
   getRoles,
   getUser,
-  createUser,
-  updateUser,
-  deleteUser,
+  getUsers,
+  getUsersAsAdmin,
   reset,
+  updateUser,
 } from './user-management.reducer';
 import { defaultValue } from 'app/shared/model/user.model';
 import { AUTHORITIES } from 'app/config/constants';
@@ -165,6 +165,7 @@ describe('User management reducer tests', () => {
         errorMessage: null,
         users: [],
         authorities: [] as any[],
+        messages: [] as any[],
         user: defaultValue,
         updating: false,
         updateSuccess: false,

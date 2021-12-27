@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { createAsyncThunk, createSlice, isFulfilled, isPending, isRejected } from '@reduxjs/toolkit';
 
-import { IUser, defaultValue } from 'app/shared/model/user.model';
+import { defaultValue, IUser } from 'app/shared/model/user.model';
 import { IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 
 const initialState = {
@@ -10,6 +10,7 @@ const initialState = {
   users: [] as ReadonlyArray<IUser>,
   authorities: [] as any[],
   user: defaultValue,
+  messages: [] as any[],
   updating: false,
   updateSuccess: false,
   totalItems: 0,
@@ -33,6 +34,14 @@ export const getUsersAsAdmin = createAsyncThunk('userManagement/fetch_users_as_a
 export const getRoles = createAsyncThunk('userManagement/fetch_roles', async () => {
   return axios.get<any[]>(`api/authorities`);
 });
+export const getMessages = createAsyncThunk(
+  'userManagement/fetch_messages',
+  async (id: string) => {
+    const requestUrl = `${adminUrl}/${id}`;
+    return axios.get<any[]>(`${requestUrl}/messages`);
+  },
+  { serializeError: serializeAxiosError }
+);
 
 export const getUser = createAsyncThunk(
   'userManagement/fetch_user',
@@ -83,11 +92,21 @@ export const UserManagementSlice = createSlice({
     reset() {
       return initialState;
     },
+    websocketChatMessage(state, action) {
+      // eslint-disable-next-line no-console
+      console.log('state and action ', state, action);
+      state.messages.push(action.payload);
+    },
   },
   extraReducers(builder) {
     builder
       .addCase(getRoles.fulfilled, (state, action) => {
         state.authorities = action.payload.data;
+      })
+      .addCase(getMessages.fulfilled, (state, action) => {
+        // eslint-disable-next-line no-console
+        console.log('messages ', action.payload);
+        state.messages = action.payload.data;
       })
       .addCase(getUser.fulfilled, (state, action) => {
         state.loading = false;
@@ -128,7 +147,7 @@ export const UserManagementSlice = createSlice({
   },
 });
 
-export const { reset } = UserManagementSlice.actions;
+export const { reset, websocketChatMessage } = UserManagementSlice.actions;
 
 // Reducer
 export default UserManagementSlice.reducer;
