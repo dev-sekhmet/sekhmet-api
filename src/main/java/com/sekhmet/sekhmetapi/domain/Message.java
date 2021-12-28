@@ -1,8 +1,10 @@
 package com.sekhmet.sekhmetapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.persistence.*;
 import org.hibernate.annotations.Cache;
@@ -33,7 +35,7 @@ public class Message implements Serializable {
 
     @Column(name = "created_at")
     @Field(type = FieldType.Keyword)
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "image")
     @Field(type = FieldType.Keyword)
@@ -100,16 +102,16 @@ public class Message implements Serializable {
         this.text = text;
     }
 
-    public LocalDate getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return this.createdAt;
     }
 
-    public Message createdAt(LocalDate createdAt) {
+    public Message createdAt(LocalDateTime createdAt) {
         this.setCreatedAt(createdAt);
         return this;
     }
 
-    public void setCreatedAt(LocalDate createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 

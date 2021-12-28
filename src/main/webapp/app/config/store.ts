@@ -5,7 +5,7 @@ import reducer from 'app/shared/reducers';
 import errorMiddleware from './error-middleware';
 import notificationMiddleware from './notification-middleware';
 import loggerMiddleware from './logger-middleware';
-import websocketMiddleware from './websocket-middleware';
+import websocketMiddleware from './websocket-middleware-tracker';
 import { loadingBarMiddleware } from 'react-redux-loading-bar';
 
 const store = configureStore({

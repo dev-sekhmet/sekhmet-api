@@ -19,5 +19,9 @@
                                  constraintName="fk_chat_member_user"
                                  referencedColumnNames="id"
                                  referencedTableName="skh_user"/>
+        <addUniqueConstraint
+            columnNames="user_id, chat_id"
+            constraintName="user_once_in_chat"
+            tableName="chat_member"/>
     </changeSet>
 </databaseChangeLog>

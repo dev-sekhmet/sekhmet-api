@@ -1,8 +1,11 @@
 import axios from 'axios';
 import { createAsyncThunk, createSlice, isFulfilled, isPending, isRejected } from '@reduxjs/toolkit';
 
-import { IUser, defaultValue } from 'app/shared/model/user.model';
+import { defaultValue, IUser } from 'app/shared/model/user.model';
 import { IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
+import { initChatWebSocket, leaveChatWebSocket } from 'app/config/websocket-middleware-chat';
+import { IChat } from 'app/shared/model/chat.model';
+import { Observable } from 'rxjs';
 
 const initialState = {
   loading: false,
@@ -10,6 +13,7 @@ const initialState = {
   users: [] as ReadonlyArray<IUser>,
   authorities: [] as any[],
   user: defaultValue,
+  receiver: '',
   updating: false,
   updateSuccess: false,
   totalItems: 0,
@@ -33,6 +37,22 @@ export const getUsersAsAdmin = createAsyncThunk('userManagement/fetch_users_as_a
 export const getRoles = createAsyncThunk('userManagement/fetch_roles', async () => {
   return axios.get<any[]>(`api/authorities`);
 });
+
+export const initChat = createAsyncThunk(
+  'userManagement/init_chat',
+  (id: string) => {
+    return initChatWebSocket(id);
+  },
+  { serializeError: serializeAxiosError }
+);
+
+export const leaveChat = createAsyncThunk(
+  'userManagement/leave_chat',
+  (id: string) => {
+    return leaveChatWebSocket(id);
+  },
+  { serializeError: serializeAxiosError }
+);
 
 export const getUser = createAsyncThunk(
   'userManagement/fetch_user',
@@ -88,6 +108,16 @@ export const UserManagementSlice = createSlice({
     builder
       .addCase(getRoles.fulfilled, (state, action) => {
         state.authorities = action.payload.data;
+      })
+      .addCase(initChat.fulfilled, (state, action) => {
+        // eslint-disable-next-line no-console
+        console.log('receiver ', action.payload);
+        state.receiver = action.payload;
+      })
+      .addCase(leaveChat.fulfilled, (state, action) => {
+        // eslint-disable-next-line no-console
+        console.log('receiver ', action.payload);
+        state.receiver = action.payload;
       })
       .addCase(getUser.fulfilled, (state, action) => {
         state.loading = false;

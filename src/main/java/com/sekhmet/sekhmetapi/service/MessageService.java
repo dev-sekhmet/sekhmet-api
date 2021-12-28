@@ -1,7 +1,5 @@
 package com.sekhmet.sekhmetapi.service;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
 import com.sekhmet.sekhmetapi.domain.Message;
 import com.sekhmet.sekhmetapi.repository.MessageRepository;
 import com.sekhmet.sekhmetapi.repository.search.MessageSearchRepository;
@@ -41,7 +39,8 @@ public class MessageService {
     public Message save(Message message) {
         log.debug("Request to save Message : {}", message);
         Message result = messageRepository.save(message);
-        messageSearchRepository.save(result);
+        //result.getChat().getMembers().forEach(chatMember -> chatMember.setChat(null));
+        //messageSearchRepository.save(result);
         return result;
     }
 
@@ -108,6 +107,18 @@ public class MessageService {
     }
 
     /**
+     * Get all the messages.by chat
+     *
+     * @param pageable the pagination information.
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public Page<Message> findAll(UUID chatId, Pageable pageable) {
+        log.debug("Request to get all Messages by chat");
+        return messageRepository.findAllByChat(chatId, pageable);
+    }
+
+    /**
      * Get one message by id.
      *
      * @param id the id of the entity.
@@ -141,5 +152,9 @@ public class MessageService {
     public Page<Message> search(String query, Pageable pageable) {
         log.debug("Request to search for a page of Messages for query {}", query);
         return messageSearchRepository.search(query, pageable);
+    }
+
+    public Page<Message> getMessages(String userLogin, String currentuserLogin, Pageable pageable) {
+        return null;
     }
 }

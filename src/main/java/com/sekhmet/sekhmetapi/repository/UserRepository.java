@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
     String USERS_BY_LOGIN_CACHE = "usersByLogin";
+    String USERS_BY_ID_CACHE = "usersById";
 
     String USERS_BY_EMAIL_CACHE = "usersByEmail";
 
@@ -34,6 +35,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @EntityGraph(attributePaths = "authorities")
     @Cacheable(cacheNames = USERS_BY_LOGIN_CACHE)
     Optional<User> findOneWithAuthoritiesByLogin(String login);
+
+    @EntityGraph(attributePaths = "authorities")
+    @Cacheable(cacheNames = USERS_BY_ID_CACHE)
+    Optional<User> findById(UUID id);
 
     @EntityGraph(attributePaths = "authorities")
     @Cacheable(cacheNames = USERS_BY_EMAIL_CACHE)

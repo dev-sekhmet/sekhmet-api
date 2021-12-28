@@ -296,7 +296,7 @@ class UserResourceIT {
     @Test
     @Transactional
     void getNonExistingUser() throws Exception {
-        restUserMockMvc.perform(get("/api/admin/users/unknown")).andExpect(status().isNotFound());
+        restUserMockMvc.perform(get("/api/admin/users/14bdb8e8-147e-4e85-a419-5084e6776d60")).andExpect(status().isNotFound());
     }
 
     @Test

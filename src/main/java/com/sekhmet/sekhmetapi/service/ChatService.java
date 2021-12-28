@@ -41,7 +41,9 @@ public class ChatService {
     public Chat save(Chat chat) {
         log.debug("Request to save Chat : {}", chat);
         Chat result = chatRepository.save(chat);
-        chatSearchRepository.save(result);
+        // avoid java.lang.StackOverflowError: null
+        //result.getMembers().forEach(chatMember -> chatMember.setChat(null));
+        // chatSearchRepository.save(result);
         return result;
     }
 
@@ -96,6 +98,19 @@ public class ChatService {
     public Optional<Chat> findOne(UUID id) {
         log.debug("Request to get Chat : {}", id);
         return chatRepository.findById(id);
+    }
+
+    /**
+     * Get one chat members
+     *
+     * @param user1
+     * @param user2
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public Optional<Chat> findChatByMembers(UUID user1, UUID user2) {
+        log.debug("Request to get Chat : user1 {}, user2 {}", user1, user2);
+        return chatRepository.findChatByMembers(user1, user2);
     }
 
     /**

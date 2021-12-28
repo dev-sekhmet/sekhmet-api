@@ -1,11 +1,13 @@
 package com.sekhmet.sekhmetapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.sekhmet.sekhmetapi.domain.enumeration.ChatType;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -36,13 +38,21 @@ public class Chat implements Serializable {
     @Field(type = FieldType.Keyword)
     private String name;
 
-    @OneToMany(mappedBy = "chat")
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "chat_type", nullable = false)
+    @Field(type = FieldType.Object, enabled = false)
+    private ChatType chatType;
+
+    @OneToMany(mappedBy = "chat", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "chat" }, allowSetters = true)
+    //@Field(type = FieldType.Object, ignoreFields = {"members"}, enabled = false)
     private Set<ChatMember> members = new HashSet<>();
 
-    @OneToMany(mappedBy = "chat")
+    @OneToMany(mappedBy = "chat", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Field(type = FieldType.Object, ignoreFields = {"messsages"}, enabled = false)
     @JsonIgnoreProperties(value = { "chat" }, allowSetters = true)
     private Set<Message> messsages = new HashSet<>();
 
@@ -67,6 +77,19 @@ public class Chat implements Serializable {
 
     public Chat icon(String icon) {
         this.setIcon(icon);
+        return this;
+    }
+
+    public ChatType getChatType() {
+        return chatType;
+    }
+
+    public void setChatType(ChatType chatType) {
+        this.chatType = chatType;
+    }
+
+    public Chat chatType(ChatType chatType) {
+        setChatType(chatType);
         return this;
     }
 

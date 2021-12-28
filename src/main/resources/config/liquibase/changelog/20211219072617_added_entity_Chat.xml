@@ -15,13 +15,17 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="icon" type="varchar(255)">
-                <constraints nullable="true" />
+                <constraints nullable="true"/>
             </column>
             <column name="name" type="varchar(255)">
-                <constraints nullable="true" />
+                <constraints nullable="true"/>
+            </column>
+            <column name="chat_type" type="varchar(255)">
+                <constraints nullable="false"/>
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
+        <addUniqueConstraint columnNames="id" constraintName="UC_CHATID_COL" tableName="chat"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -43,6 +47,7 @@
             <column name="id" type="${uuidType}"/>
             <column name="icon" type="string"/>
             <column name="name" type="string"/>
+            <column name="chat_type" type="string"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>
