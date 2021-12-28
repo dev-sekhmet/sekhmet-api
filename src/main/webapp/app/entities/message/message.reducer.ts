@@ -1,9 +1,9 @@
 import axios from 'axios';
-import { createAsyncThunk, isFulfilled, isPending, isRejected } from '@reduxjs/toolkit';
+import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
 
 import { cleanEntity } from 'app/shared/util/entity-utils';
-import { IQueryParams, createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
-import { IMessage, defaultValue } from 'app/shared/model/message.model';
+import { createEntitySlice, EntityState, IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
+import { defaultValue, IMessage } from 'app/shared/model/message.model';
 
 const initialState: EntityState<IMessage> = {
   loading: false,
@@ -29,6 +29,16 @@ export const getEntities = createAsyncThunk('message/fetch_entity_list', async (
   const requestUrl = `${apiUrl}${sort ? `?page=${page}&size=${size}&sort=${sort}&` : '?'}cacheBuster=${new Date().getTime()}`;
   return axios.get<IMessage[]>(requestUrl);
 });
+
+export const getEntitiesByChat = createAsyncThunk(
+  'message/fetch_entity_list_by_chat',
+  async ({ query, page, size, sort }: IQueryParams) => {
+    const requestUrl = `${apiUrl}/chat/${query}${
+      sort ? `?page=${page}&size=${size}&sort=${sort}&` : '?'
+    }cacheBuster=${new Date().getTime()}`;
+    return axios.get<IMessage[]>(requestUrl);
+  }
+);
 
 export const getEntity = createAsyncThunk(
   'message/fetch_entity',
@@ -85,6 +95,13 @@ export const deleteEntity = createAsyncThunk(
 export const MessageSlice = createEntitySlice({
   name: 'message',
   initialState,
+  reducers: {
+    websocketChatMessage(state, action) {
+      // eslint-disable-next-line no-console
+      console.log('state and action ', state, action);
+      state.entities ? state.entities.push(action.payload) : (state.entities = [action.payload]);
+    },
+  },
   extraReducers(builder) {
     builder
       .addCase(getEntity.fulfilled, (state, action) => {
@@ -96,7 +113,7 @@ export const MessageSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = {};
       })
-      .addMatcher(isFulfilled(getEntities, searchEntities), (state, action) => {
+      .addMatcher(isFulfilled(getEntities, searchEntities, getEntitiesByChat), (state, action) => {
         return {
           ...state,
           loading: false,
@@ -123,7 +140,7 @@ export const MessageSlice = createEntitySlice({
   },
 });
 
-export const { reset } = MessageSlice.actions;
+export const { reset, websocketChatMessage } = MessageSlice.actions;
 
 // Reducer
 export default MessageSlice.reducer;

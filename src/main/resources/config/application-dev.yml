@@ -25,6 +25,8 @@ logging:
       elasticsearch:
         client: DEBUG
     com.sekhmet.sekhmetapi: DEBUG
+    # Logs the JDBC parameters passed to a query
+    #org.hibernate.type: trace
 
 management:
   health:

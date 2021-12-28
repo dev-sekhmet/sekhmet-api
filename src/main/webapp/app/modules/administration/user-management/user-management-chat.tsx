@@ -3,38 +3,61 @@ import { Link, RouteComponentProps } from 'react-router-dom';
 import { Button, Col, Row } from 'reactstrap';
 import { translate, Translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { getMessages, getRoles, getUser, reset } from './user-management.reducer';
+import { getRoles, getUser, initChat, leaveChat, reset } from './user-management.reducer';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { sendMessageWebSocket } from 'app/config/websocket-middleware-chat';
+import { receiver, sendMessageWebSocket } from 'app/config/websocket-middleware-chat';
+import { getByUser } from 'app/entities/chat/chat.reducer';
+import { getEntitiesByChat, websocketChatMessage } from 'app/entities/message/message.reducer';
 
-export const UserManagementChat = (props: RouteComponentProps<{ login: string }>) => {
+export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) => {
   const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    dispatch(getUser(props.match.params.login));
-    dispatch(getMessages(props.match.params.login));
-    dispatch(getRoles());
-    return () => {
-      dispatch(reset());
-    };
-  }, [props.match.params.login]);
-
-  const handleClose = () => {
-    props.history.push('/admin/user-management');
-  };
-
-  const sendMessage = values => {
-    // eslint-disable-next-line no-console
-    console.log('values ', values);
-    sendMessageWebSocket(values);
-  };
-
   const isInvalid = false;
   const user = useAppSelector(state => state.userManagement.user);
   const loading = useAppSelector(state => state.userManagement.loading);
   const updating = useAppSelector(state => state.userManagement.updating);
-  const messages = useAppSelector(state => state.userManagement.messages);
+  const chatEntity = useAppSelector(state => state.chat.entity);
+  const messages = useAppSelector(state => state.message.entities);
 
+  useEffect(() => {
+    dispatch(getUser(props.match.params.id));
+    dispatch(getRoles());
+    dispatch(getByUser(props.match.params.id));
+    return () => {
+      dispatch(reset());
+    };
+  }, [props.match.params.id]);
+
+  useEffect(() => {
+    if (chatEntity.id) {
+      dispatch(getEntitiesByChat({ query: chatEntity.id }));
+      dispatch(initChat(chatEntity.id));
+    }
+  }, [user, chatEntity]);
+
+  useEffect(() => {
+    if (chatEntity.id) {
+      receiver().subscribe(message => {
+        return dispatch(websocketChatMessage(message));
+      });
+    }
+  }, [chatEntity]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(leaveChat(chatEntity.id));
+    };
+  }, []);
+
+  const sendMessage = values => {
+    sendMessageWebSocket({
+      text: values.text,
+      chat: chatEntity,
+    });
+  };
+
+  const sorted = [...messages].sort((a, b) => {
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
   return (
     <div>
       <Row className="justify-content-center">
@@ -51,19 +74,20 @@ export const UserManagementChat = (props: RouteComponentProps<{ login: string }>
           {loading ? (
             <p>Loading...</p>
           ) : (
-            <ValidatedForm onSubmit={sendMessage} defaultValues={{ message: 'samplemessage' }}>
+            <ValidatedForm onSubmit={sendMessage}>
               <table className="table table-sm table-striped table-bordered">
                 <tbody>
-                  {messages.map((activity, i) => (
-                    <tr key={`log-row-${i}`}>
-                      <td>{activity.userLogin}</td>
-                      <td>{activity.message}</td>
-                      <td>{activity.time}</td>
-                    </tr>
-                  ))}
+                  {sorted &&
+                    sorted.map((message, i) => (
+                      <tr key={`log-row-${i}`}>
+                        <td>{message.user.login}</td>
+                        <td>{message.text}</td>
+                        <td>{message.createdAt}</td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
-              <ValidatedField type="text" name="message" label={translate('userManagement.message')} />
+              <ValidatedField type="text" name="text" label={translate('userManagement.message')} />
               <Button tag={Link} to="/admin/user-management" replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />
                 &nbsp;

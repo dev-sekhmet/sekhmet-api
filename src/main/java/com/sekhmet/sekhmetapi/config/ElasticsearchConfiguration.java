@@ -1,9 +1,6 @@
 package com.sekhmet.sekhmetapi.config;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Arrays;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +23,8 @@ public class ElasticsearchConfiguration extends ElasticsearchConfigurationSuppor
                 new InstantWritingConverter(),
                 new InstantReadingConverter(),
                 new LocalDateWritingConverter(),
+                new LocalDateTimeReadingConverter(),
+                new LocalDateTimeWritingConverter(),
                 new LocalDateReadingConverter()
             )
         );
@@ -91,6 +90,18 @@ public class ElasticsearchConfiguration extends ElasticsearchConfigurationSuppor
         }
     }
 
+    @WritingConverter
+    static class LocalDateTimeWritingConverter implements Converter<LocalDateTime, String> {
+
+        @Override
+        public String convert(LocalDateTime source) {
+            if (source == null) {
+                return null;
+            }
+            return source.toString();
+        }
+    }
+
     @ReadingConverter
     static class LocalDateReadingConverter implements Converter<String, LocalDate> {
 
@@ -100,6 +111,18 @@ public class ElasticsearchConfiguration extends ElasticsearchConfigurationSuppor
                 return null;
             }
             return LocalDate.parse(source);
+        }
+    }
+
+    @ReadingConverter
+    static class LocalDateTimeReadingConverter implements Converter<String, LocalDateTime> {
+
+        @Override
+        public LocalDateTime convert(String source) {
+            if (source == null) {
+                return null;
+            }
+            return LocalDateTime.parse(source);
         }
     }
 }

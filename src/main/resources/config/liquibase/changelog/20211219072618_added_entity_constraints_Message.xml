@@ -19,5 +19,7 @@
                                  constraintName="fk_message_user"
                                  referencedColumnNames="id"
                                  referencedTableName="skh_user"/>
+
+        <addUniqueConstraint columnNames="id" constraintName="UC_MESSAGEID_COL" tableName="message"/>
     </changeSet>
 </databaseChangeLog>

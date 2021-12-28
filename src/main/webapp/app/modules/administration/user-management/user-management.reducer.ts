@@ -3,6 +3,9 @@ import { createAsyncThunk, createSlice, isFulfilled, isPending, isRejected } fro
 
 import { defaultValue, IUser } from 'app/shared/model/user.model';
 import { IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
+import { initChatWebSocket, leaveChatWebSocket } from 'app/config/websocket-middleware-chat';
+import { IChat } from 'app/shared/model/chat.model';
+import { Observable } from 'rxjs';
 
 const initialState = {
   loading: false,
@@ -10,7 +13,7 @@ const initialState = {
   users: [] as ReadonlyArray<IUser>,
   authorities: [] as any[],
   user: defaultValue,
-  messages: [] as any[],
+  receiver: '',
   updating: false,
   updateSuccess: false,
   totalItems: 0,
@@ -34,11 +37,19 @@ export const getUsersAsAdmin = createAsyncThunk('userManagement/fetch_users_as_a
 export const getRoles = createAsyncThunk('userManagement/fetch_roles', async () => {
   return axios.get<any[]>(`api/authorities`);
 });
-export const getMessages = createAsyncThunk(
-  'userManagement/fetch_messages',
-  async (id: string) => {
-    const requestUrl = `${adminUrl}/${id}`;
-    return axios.get<any[]>(`${requestUrl}/messages`);
+
+export const initChat = createAsyncThunk(
+  'userManagement/init_chat',
+  (id: string) => {
+    return initChatWebSocket(id);
+  },
+  { serializeError: serializeAxiosError }
+);
+
+export const leaveChat = createAsyncThunk(
+  'userManagement/leave_chat',
+  (id: string) => {
+    return leaveChatWebSocket(id);
   },
   { serializeError: serializeAxiosError }
 );
@@ -92,21 +103,21 @@ export const UserManagementSlice = createSlice({
     reset() {
       return initialState;
     },
-    websocketChatMessage(state, action) {
-      // eslint-disable-next-line no-console
-      console.log('state and action ', state, action);
-      state.messages.push(action.payload);
-    },
   },
   extraReducers(builder) {
     builder
       .addCase(getRoles.fulfilled, (state, action) => {
         state.authorities = action.payload.data;
       })
-      .addCase(getMessages.fulfilled, (state, action) => {
+      .addCase(initChat.fulfilled, (state, action) => {
         // eslint-disable-next-line no-console
-        console.log('messages ', action.payload);
-        state.messages = action.payload.data;
+        console.log('receiver ', action.payload);
+        state.receiver = action.payload;
+      })
+      .addCase(leaveChat.fulfilled, (state, action) => {
+        // eslint-disable-next-line no-console
+        console.log('receiver ', action.payload);
+        state.receiver = action.payload;
       })
       .addCase(getUser.fulfilled, (state, action) => {
         state.loading = false;
@@ -147,7 +158,7 @@ export const UserManagementSlice = createSlice({
   },
 });
 
-export const { reset, websocketChatMessage } = UserManagementSlice.actions;
+export const { reset } = UserManagementSlice.actions;
 
 // Reducer
 export default UserManagementSlice.reducer;

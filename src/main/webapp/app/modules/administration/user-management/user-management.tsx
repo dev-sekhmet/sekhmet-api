@@ -187,7 +187,7 @@ export const UserManagement = (props: RouteComponentProps<any>) => {
                       <Translate contentKey="entity.action.edit">Edit</Translate>
                     </span>
                   </Button>
-                  <Button tag={Link} to={`${match.url}/${user.login}/message`} disabled={account.id === user.id} color="primary" size="sm">
+                  <Button tag={Link} to={`${match.url}/${user.id}/message`} disabled={account.id === user.id} color="primary" size="sm">
                     <FontAwesomeIcon icon="pencil-alt" />{' '}
                     <span className="d-none d-md-inline">
                       <Translate contentKey="entity.action.message">Message</Translate>

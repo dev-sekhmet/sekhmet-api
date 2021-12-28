@@ -9,4 +9,6 @@ export interface IChat {
   messsages?: IMessage[] | null;
 }
 
-export const defaultValue: Readonly<IChat> = {};
+export const defaultValue: Readonly<IChat> = {
+  messsages: [] as IMessage[],
+};

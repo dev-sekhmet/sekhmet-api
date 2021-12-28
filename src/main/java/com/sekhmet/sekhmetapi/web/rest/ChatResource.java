@@ -1,10 +1,13 @@
 package com.sekhmet.sekhmetapi.web.rest;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
 import com.sekhmet.sekhmetapi.domain.Chat;
+import com.sekhmet.sekhmetapi.domain.ChatMember;
+import com.sekhmet.sekhmetapi.domain.User;
+import com.sekhmet.sekhmetapi.domain.enumeration.ChatMemberScope;
+import com.sekhmet.sekhmetapi.domain.enumeration.ChatType;
 import com.sekhmet.sekhmetapi.repository.ChatRepository;
 import com.sekhmet.sekhmetapi.service.ChatService;
+import com.sekhmet.sekhmetapi.service.UserService;
 import com.sekhmet.sekhmetapi.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,7 +15,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -21,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -44,11 +45,12 @@ public class ChatResource {
     private String applicationName;
 
     private final ChatService chatService;
-
+    private final UserService userService;
     private final ChatRepository chatRepository;
 
-    public ChatResource(ChatService chatService, ChatRepository chatRepository) {
+    public ChatResource(ChatService chatService, UserService userService, ChatRepository chatRepository) {
         this.chatService = chatService;
+        this.userService = userService;
         this.chatRepository = chatRepository;
     }
 
@@ -164,6 +166,30 @@ public class ChatResource {
     public ResponseEntity<Chat> getChat(@PathVariable UUID id) {
         log.debug("REST request to get Chat : {}", id);
         Optional<Chat> chat = chatService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(chat);
+    }
+
+    /**
+     * {@code GET  /chats/:id} : get the "id" chat.
+     *
+     * @param id the id of the chat to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the chat, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/chats/{id}/user")
+    public ResponseEntity<Chat> findChatByMembers(@PathVariable UUID id) {
+        log.debug("REST request to get Chat : {}", id);
+        User user = userService.getUserWithAuthorities().get();
+        Optional<Chat> chat = chatService
+            .findChatByMembers(id, user.getId())
+            .or(() -> {
+                Chat newChat = new Chat();
+                User secondUser = userService.getUserById(id).get();
+                newChat.setChatType(ChatType.TWO_USER);
+                newChat.addMembers(new ChatMember().scope(ChatMemberScope.PARTICIPANT).user(user));
+                newChat.addMembers(new ChatMember().scope(ChatMemberScope.PARTICIPANT).user(secondUser));
+                newChat = chatService.save(newChat);
+                return Optional.of(newChat);
+            });
         return ResponseUtil.wrapOrNotFound(chat);
     }
 

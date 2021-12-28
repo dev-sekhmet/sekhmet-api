@@ -1,5 +1,6 @@
 package com.sekhmet.sekhmetapi.config;
 
+import com.sekhmet.sekhmetapi.repository.UserRepository;
 import java.time.Duration;
 import org.ehcache.config.builders.*;
 import org.ehcache.jsr107.Eh107Configuration;
@@ -44,6 +45,7 @@ public class CacheConfiguration {
     public JCacheManagerCustomizer cacheManagerCustomizer() {
         return cm -> {
             createCache(cm, com.sekhmet.sekhmetapi.repository.UserRepository.USERS_BY_LOGIN_CACHE);
+            createCache(cm, UserRepository.USERS_BY_ID_CACHE);
             createCache(cm, com.sekhmet.sekhmetapi.repository.UserRepository.USERS_BY_EMAIL_CACHE);
             createCache(cm, com.sekhmet.sekhmetapi.domain.User.class.getName());
             createCache(cm, com.sekhmet.sekhmetapi.domain.Authority.class.getName());

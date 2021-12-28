@@ -73,14 +73,18 @@
                                  referencedColumnNames="id"
                                  referencedTableName="skh_user"/>
 
-        <addNotNullConstraint   columnName="password_hash"
-                                columnDataType="varchar(60)"
-                                tableName="skh_user"/>
+        <addNotNullConstraint columnName="password_hash"
+                              columnDataType="varchar(60)"
+                              tableName="skh_user"/>
+
+        <addUniqueConstraint columnNames="email" constraintName="UC_SKH_USEREMAIL_COL" tableName="skh_user"/>
+        <addUniqueConstraint columnNames="id" constraintName="UC_SKH_USERID_COL" tableName="skh_user"/>
+        <addUniqueConstraint columnNames="login" constraintName="UC_SKH_USERLOGIN_COL" tableName="skh_user"/>
         <loadData
-                  file="config/liquibase/data/user.csv"
-                  separator=";"
-                  tableName="skh_user"
-                  usePreparedStatements="true">
+            file="config/liquibase/data/user.csv"
+            separator=";"
+            tableName="skh_user"
+            usePreparedStatements="true">
             <column name="id" type="${uuidType}"/>
             <column name="activated" type="boolean"/>
             <column name="created_date" type="timestamp"/>

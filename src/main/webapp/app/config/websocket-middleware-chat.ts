@@ -1,17 +1,16 @@
 import SockJS from 'sockjs-client';
 
-import Stomp from 'webstomp-client';
+import Stomp, { Client, Subscription } from 'webstomp-client';
 import { Observable } from 'rxjs';
 import { Storage } from 'react-jhipster';
-import { getAccount, logoutSession } from 'app/shared/reducers/authentication';
-import { websocketChatMessage } from 'app/modules/administration/user-management/user-management.reducer';
+import { IMessage } from 'app/shared/model/message.model';
 
-let stompClient = null;
+let stompClient: Client = null;
 
-let subscriber = null;
+let subscriber: Subscription = null;
 let connection: Promise<any>;
 let connectedPromise: any = null;
-let listener: Observable<any>;
+let listener: Observable<IMessage>;
 let listenerObserver: any;
 let alreadyConnectedOnce = false;
 
@@ -22,20 +21,22 @@ const createListener = (): Observable<any> =>
     listenerObserver = observer;
   });
 
-export const sendMessageWebSocket = (message: any) => {
+export const sendMessageWebSocket = (message: IMessage) => {
   connection?.then(() => {
     stompClient?.send(
-      '/chat', // destination
-      JSON.stringify(message), // body
-      {} // header
+      `/chat/${message.chat.id}/sent`, // destination
+      JSON.stringify(message)
     );
   });
 };
 
-const subscribe = () => {
+const subscribe = (chatId: string) => {
   connection.then(() => {
-    subscriber = stompClient.subscribe('/chat/public', data => {
-      listenerObserver.next(JSON.parse(data.body));
+    subscriber = stompClient.subscribe(`/chat/${chatId}`, data => {
+      const message = JSON.parse(data.body) as IMessage;
+      if (message.id) {
+        listenerObserver.next(message);
+      }
     });
   });
 };
@@ -68,17 +69,17 @@ const connect = () => {
   });
 };
 
-const disconnect = () => {
+const disconnect = (chatId: string) => {
   if (stompClient !== null) {
     if (stompClient.connected) {
-      stompClient.disconnect();
+      stompClient.disconnect(null, { 'chat-id': chatId });
     }
     stompClient = null;
   }
   alreadyConnectedOnce = false;
 };
 
-const receive = () => listener;
+export const receiver: () => Observable<IMessage> = () => listener;
 
 const unsubscribe = () => {
   if (subscriber !== null) {
@@ -87,18 +88,30 @@ const unsubscribe = () => {
   listener = createListener();
 };
 
-export default store => next => action => {
-  if (getAccount.fulfilled.match(action)) {
-    connect();
-    if (!alreadyConnectedOnce) {
-      subscribe();
-      receive().subscribe(activity => {
-        return store.dispatch(websocketChatMessage(activity));
-      });
-    }
-  } else if (getAccount.rejected.match(action) || action.type === logoutSession().type) {
-    unsubscribe();
-    disconnect();
+export const initChatWebSocket = (chatId: string) => {
+  connect();
+  if (!alreadyConnectedOnce) {
+    return new Promise<string>((resolve, reject) => {
+      /*    receiver().subscribe(message => {
+            return dispatch(websocketChatMessage(message));
+          });*/
+      try {
+        subscribe(chatId);
+        resolve('SUBSCRIPTION AU CHAT OK');
+      } catch (e) {
+        reject('ECHEC DE lA CONNEXION AU CHAT');
+      }
+    });
   }
-  return next(action);
+};
+
+export const leaveChatWebSocket = (chatId: string) => {
+  return new Promise<string>(resolve => {
+    /*    receiver().subscribe(message => {
+          return dispatch(websocketChatMessage(message));
+        });*/
+    unsubscribe();
+    disconnect(chatId);
+    resolve('OK pour la deconnexion');
+  });
 };

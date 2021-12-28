@@ -5,8 +5,7 @@ import reducer from 'app/shared/reducers';
 import errorMiddleware from './error-middleware';
 import notificationMiddleware from './notification-middleware';
 import loggerMiddleware from './logger-middleware';
-import websocketMiddlewareTracker from './websocket-middleware-tracker';
-import websocketMiddlewareChat from './websocket-middleware-chat';
+import websocketMiddleware from './websocket-middleware-tracker';
 import { loadingBarMiddleware } from 'react-redux-loading-bar';
 
 const store = configureStore({
@@ -17,14 +16,7 @@ const store = configureStore({
         // Ignore these field paths in all actions
         ignoredActionPaths: ['payload.config', 'payload.request', 'error', 'meta.arg'],
       },
-    }).concat(
-      errorMiddleware,
-      notificationMiddleware,
-      loadingBarMiddleware(),
-      websocketMiddlewareTracker,
-      websocketMiddlewareChat,
-      loggerMiddleware
-    ),
+    }).concat(errorMiddleware, notificationMiddleware, loadingBarMiddleware(), websocketMiddleware, loggerMiddleware),
 });
 
 const getStore = () => store;

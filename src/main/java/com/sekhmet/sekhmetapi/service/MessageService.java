@@ -39,7 +39,8 @@ public class MessageService {
     public Message save(Message message) {
         log.debug("Request to save Message : {}", message);
         Message result = messageRepository.save(message);
-        messageSearchRepository.save(result);
+        //result.getChat().getMembers().forEach(chatMember -> chatMember.setChat(null));
+        //messageSearchRepository.save(result);
         return result;
     }
 
@@ -103,6 +104,18 @@ public class MessageService {
     public Page<Message> findAll(Pageable pageable) {
         log.debug("Request to get all Messages");
         return messageRepository.findAll(pageable);
+    }
+
+    /**
+     * Get all the messages.by chat
+     *
+     * @param pageable the pagination information.
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public Page<Message> findAll(UUID chatId, Pageable pageable) {
+        log.debug("Request to get all Messages by chat");
+        return messageRepository.findAllByChat(chatId, pageable);
     }
 
     /**

@@ -13,8 +13,10 @@ import userManagement, {
   reset,
   updateUser,
 } from './user-management.reducer';
-import { defaultValue } from 'app/shared/model/user.model';
+import { defaultValue, IUser } from 'app/shared/model/user.model';
 import { AUTHORITIES } from 'app/config/constants';
+import { IChat } from 'app/shared/model/chat.model';
+import { Observable } from 'rxjs';
 
 describe('User management reducer tests', () => {
   const username = process.env.E2E_USERNAME ?? 'admin';
@@ -163,10 +165,10 @@ describe('User management reducer tests', () => {
       const initialState = {
         loading: false,
         errorMessage: null,
-        users: [],
+        users: [] as ReadonlyArray<IUser>,
         authorities: [] as any[],
-        messages: [] as any[],
         user: defaultValue,
+        receiver: '',
         updating: false,
         updateSuccess: false,
         totalItems: 0,

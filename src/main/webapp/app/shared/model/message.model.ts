@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { IChat } from 'app/shared/model/chat.model';
+import { IUser } from 'app/shared/model/user.model';
 
 export interface IMessage {
   id?: string;
@@ -13,6 +14,7 @@ export interface IMessage {
   received?: boolean | null;
   pending?: boolean | null;
   chat?: IChat | null;
+  user?: IUser | null;
 }
 
 export const defaultValue: Readonly<IMessage> = {

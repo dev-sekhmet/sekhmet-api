@@ -1,6 +1,6 @@
 package com.sekhmet.sekhmetapi.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sekhmet.sekhmetapi.domain.enumeration.ChatMemberScope;
 import java.io.Serializable;
 import java.util.UUID;
@@ -40,7 +40,7 @@ public class ChatMember implements Serializable {
     private User user;
 
     @ManyToOne
-    @JsonIgnoreProperties(value = { "members", "messsages" }, allowSetters = true)
+    @JsonIgnore
     private Chat chat;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
@@ -85,6 +85,11 @@ public class ChatMember implements Serializable {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public ChatMember user(User user) {
+        this.setUser(user);
+        return this;
     }
 
     public ChatMember chat(Chat chat) {

@@ -39,6 +39,15 @@ export const getEntity = createAsyncThunk(
   { serializeError: serializeAxiosError }
 );
 
+export const getByUser = createAsyncThunk(
+  'chat/fetch_chat_user',
+  async (id: string) => {
+    const requestUrl = `${apiUrl}/${id}`;
+    return axios.get<IChat>(`${requestUrl}/user`);
+  },
+  { serializeError: serializeAxiosError }
+);
+
 export const createEntity = createAsyncThunk(
   'chat/create_entity',
   async (entity: IChat, thunkAPI) => {
@@ -89,6 +98,11 @@ export const ChatSlice = createEntitySlice({
     builder
       .addCase(getEntity.fulfilled, (state, action) => {
         state.loading = false;
+        state.entity = action.payload.data;
+      })
+      .addCase(getByUser.fulfilled, (state, action) => {
+        // eslint-disable-next-line no-console
+        console.log('CCCHHHHAAAATTTT ', action.payload);
         state.entity = action.payload.data;
       })
       .addCase(deleteEntity.fulfilled, state => {

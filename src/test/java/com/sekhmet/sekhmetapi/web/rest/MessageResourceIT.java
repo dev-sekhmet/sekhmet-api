@@ -13,6 +13,7 @@ import com.sekhmet.sekhmetapi.repository.MessageRepository;
 import com.sekhmet.sekhmetapi.repository.UserRepository;
 import com.sekhmet.sekhmetapi.repository.search.MessageSearchRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
@@ -43,8 +44,8 @@ class MessageResourceIT {
     private static final String DEFAULT_TEXT = "AAAAAAAAAA";
     private static final String UPDATED_TEXT = "BBBBBBBBBB";
 
-    private static final LocalDate DEFAULT_CREATED_AT = LocalDate.ofEpochDay(0L);
-    private static final LocalDate UPDATED_CREATED_AT = LocalDate.now(ZoneId.systemDefault());
+    private static final LocalDateTime DEFAULT_CREATED_AT = LocalDateTime.now(ZoneId.systemDefault());
+    private static final LocalDateTime UPDATED_CREATED_AT = LocalDateTime.now(ZoneId.systemDefault());
 
     private static final String DEFAULT_IMAGE = "AAAAAAAAAA";
     private static final String UPDATED_IMAGE = "BBBBBBBBBB";

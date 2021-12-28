@@ -15,8 +15,8 @@
             <column name="text" type="varchar(255)">
                 <constraints nullable="true" />
             </column>
-            <column name="created_at" type="date">
-                <constraints nullable="true" />
+            <column name="created_at" type="timestamp">
+                <constraints nullable="true"/>
             </column>
             <column name="image" type="varchar(255)">
                 <constraints nullable="true" />
@@ -67,7 +67,7 @@
                   usePreparedStatements="true">
             <column name="id" type="${uuidType}"/>
             <column name="text" type="string"/>
-            <column name="created_at" type="date"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="image" type="string"/>
             <column name="video" type="string"/>
             <column name="audio" type="string"/>
@@ -75,6 +75,7 @@
             <column name="sent" type="boolean"/>
             <column name="received" type="boolean"/>
             <column name="pending" type="boolean"/>
+            <column name="chat_id" type="${uuidType}"/>
             <column name="user_id" type="${uuidType}"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
