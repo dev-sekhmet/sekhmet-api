@@ -1,8 +1,11 @@
 name: Release
 on:
-  create:
-    branches:
-      - 'release/v[0-9]+.[0-9]+.[xy0-9]+'
+  workflow_dispatch:
+    inputs:
+      App_version:
+        description: 'create release on artifactory ?'
+        required: true
+        default: 'true'
 jobs:
   pipeline:
     name: sekhmetApi Release push

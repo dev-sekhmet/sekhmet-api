@@ -1,7 +1,11 @@
 name: Snapshot
 on:
-  pull_request:
-    types: [ labeled ]
+  workflow_dispatch:
+    inputs:
+      App_version:
+        description: 'create snapshot on artifactory ?'
+        required: true
+        default: 'true'
 jobs:
   pipeline:
     name: sekhmetApi Snapshot push
