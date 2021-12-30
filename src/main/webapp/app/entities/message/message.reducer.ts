@@ -30,7 +30,7 @@ export const getEntities = createAsyncThunk('message/fetch_entity_list', async (
   return axios.get<IMessage[]>(requestUrl);
 });
 
-export const getEntitiesByChat = createAsyncThunk(
+export const getMessagesByChat = createAsyncThunk(
   'message/fetch_entity_list_by_chat',
   async ({ query, page, size, sort }: IQueryParams) => {
     const requestUrl = `${apiUrl}/chat/${query}${
@@ -97,8 +97,6 @@ export const MessageSlice = createEntitySlice({
   initialState,
   reducers: {
     websocketChatMessage(state, action) {
-      // eslint-disable-next-line no-console
-      console.log('state and action ', state, action);
       state.entities ? state.entities.push(action.payload) : (state.entities = [action.payload]);
     },
   },
@@ -113,7 +111,7 @@ export const MessageSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = {};
       })
-      .addMatcher(isFulfilled(getEntities, searchEntities, getEntitiesByChat), (state, action) => {
+      .addMatcher(isFulfilled(getEntities, searchEntities, getMessagesByChat), (state, action) => {
         return {
           ...state,
           loading: false,

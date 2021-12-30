@@ -6,33 +6,29 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getRoles, getUser, initChat, leaveChat, reset } from './user-management.reducer';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { receiver, sendMessageWebSocket } from 'app/config/websocket-middleware-chat';
-import { getByUser } from 'app/entities/chat/chat.reducer';
-import { getEntitiesByChat, websocketChatMessage } from 'app/entities/message/message.reducer';
+import { getChatByUser } from 'app/entities/chat/chat.reducer';
+import { getMessagesByChat, websocketChatMessage } from 'app/entities/message/message.reducer';
+import { IMessage } from 'app/shared/model/message.model';
+import { MessageList } from 'react-chat-elements';
+import 'react-chat-elements/dist/main.css';
 
 export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) => {
   const dispatch = useAppDispatch();
   const isInvalid = false;
-  const user = useAppSelector(state => state.userManagement.user);
-  const loading = useAppSelector(state => state.userManagement.loading);
-  const updating = useAppSelector(state => state.userManagement.updating);
   const chatEntity = useAppSelector(state => state.chat.entity);
-  const messages = useAppSelector(state => state.message.entities);
 
   useEffect(() => {
     dispatch(getUser(props.match.params.id));
     dispatch(getRoles());
-    dispatch(getByUser(props.match.params.id));
-    return () => {
-      dispatch(reset());
-    };
+    dispatch(getChatByUser(props.match.params.id));
   }, [props.match.params.id]);
 
   useEffect(() => {
     if (chatEntity.id) {
-      dispatch(getEntitiesByChat({ query: chatEntity.id }));
+      dispatch(getMessagesByChat({ query: chatEntity.id }));
       dispatch(initChat(chatEntity.id));
     }
-  }, [user, chatEntity]);
+  }, [chatEntity]);
 
   useEffect(() => {
     if (chatEntity.id) {
@@ -45,6 +41,7 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
   useEffect(() => {
     return () => {
       dispatch(leaveChat(chatEntity.id));
+      dispatch(reset());
     };
   }, []);
 
@@ -54,10 +51,26 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
       chat: chatEntity,
     });
   };
+  const user = useAppSelector(state => state.userManagement.user);
+  const loading = useAppSelector(state => state.userManagement.loading);
+  const messages: ReadonlyArray<IMessage> = useAppSelector(state => state.message.entities);
 
-  const sorted = [...messages].sort((a, b) => {
-    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-  });
+  const sorted = [...messages]
+    // TODO: Avoid duplicate useEffect call sevral times
+    .filter((m, i, self) => i === self.findIndex(m1 => m1.id === m.id))
+    .sort((a, b) => {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    })
+    .map(value => {
+      return {
+        position: value.user.id === user.id ? 'left' : 'right',
+        type: 'text',
+        title: value.user.id === user.id ? user.firstName + ' ' + user.lastName : 'Vous',
+        // avatar: 'https://i.pravatar.cc/300',
+        text: value.text,
+        date: new Date(value.createdAt),
+      };
+    });
   return (
     <div>
       <Row className="justify-content-center">
@@ -75,18 +88,7 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
             <p>Loading...</p>
           ) : (
             <ValidatedForm onSubmit={sendMessage}>
-              <table className="table table-sm table-striped table-bordered">
-                <tbody>
-                  {sorted &&
-                    sorted.map((message, i) => (
-                      <tr key={`log-row-${i}`}>
-                        <td>{message.user.login}</td>
-                        <td>{message.text}</td>
-                        <td>{message.createdAt}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+              <MessageList className="message-list" lockable={true} toBottomHeight={'100%'} dataSource={sorted} />
               <ValidatedField type="text" name="text" label={translate('userManagement.message')} />
               <Button tag={Link} to="/admin/user-management" replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />
@@ -96,7 +98,7 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
                 </span>
               </Button>
               &nbsp;
-              <Button color="primary" type="submit" disabled={isInvalid || updating}>
+              <Button color="primary" type="submit" disabled={isInvalid}>
                 <FontAwesomeIcon icon="save" />
                 &nbsp;
                 <Translate contentKey="userManagement.action.sendMessage">Save</Translate>

@@ -39,7 +39,6 @@ public class MessageService {
     public Message save(Message message) {
         log.debug("Request to save Message : {}", message);
         Message result = messageRepository.save(message);
-        //result.getChat().getMembers().forEach(chatMember -> chatMember.setChat(null));
         //messageSearchRepository.save(result);
         return result;
     }

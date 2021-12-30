@@ -1,9 +1,9 @@
 import axios from 'axios';
-import { createAsyncThunk, isFulfilled, isPending, isRejected } from '@reduxjs/toolkit';
+import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
 
 import { cleanEntity } from 'app/shared/util/entity-utils';
-import { IQueryParams, createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
-import { IChat, defaultValue } from 'app/shared/model/chat.model';
+import { createEntitySlice, EntityState, IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
+import { defaultValue, IChat } from 'app/shared/model/chat.model';
 
 const initialState: EntityState<IChat> = {
   loading: false,
@@ -39,7 +39,7 @@ export const getEntity = createAsyncThunk(
   { serializeError: serializeAxiosError }
 );
 
-export const getByUser = createAsyncThunk(
+export const getChatByUser = createAsyncThunk(
   'chat/fetch_chat_user',
   async (id: string) => {
     const requestUrl = `${apiUrl}/${id}`;
@@ -100,9 +100,7 @@ export const ChatSlice = createEntitySlice({
         state.loading = false;
         state.entity = action.payload.data;
       })
-      .addCase(getByUser.fulfilled, (state, action) => {
-        // eslint-disable-next-line no-console
-        console.log('CCCHHHHAAAATTTT ', action.payload);
+      .addCase(getChatByUser.fulfilled, (state, action) => {
         state.entity = action.payload.data;
       })
       .addCase(deleteEntity.fulfilled, state => {
