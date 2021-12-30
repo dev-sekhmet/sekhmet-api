@@ -1,19 +1,21 @@
 import React, { useEffect } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { Button, Col, Row } from 'reactstrap';
-import { translate, Translate, ValidatedField, ValidatedForm } from 'react-jhipster';
+import { Translate, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getRoles, getUser, initChat, leaveChat, reset } from './user-management.reducer';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { receiver, sendMessageWebSocket } from 'app/config/websocket-middleware-chat';
 import { getChatByUser } from 'app/entities/chat/chat.reducer';
-import { getMessagesByChat, websocketChatMessage } from 'app/entities/message/message.reducer';
+import { createEntityWithMedia, getMessagesByChat, websocketChatMessage } from 'app/entities/message/message.reducer';
 import { IMessage } from 'app/shared/model/message.model';
-import { MessageList } from 'react-chat-elements';
+import { Button as ChatButton, Input, MessageList } from 'react-chat-elements';
 import 'react-chat-elements/dist/main.css';
+import './chat.css';
 
 export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) => {
   const dispatch = useAppDispatch();
+  let textInput = null;
   const isInvalid = false;
   const chatEntity = useAppSelector(state => state.chat.entity);
 
@@ -45,9 +47,32 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
     };
   }, []);
 
-  const sendMessage = values => {
+  const getRefMessageInput = el => {
+    if (el != null) {
+      textInput = el;
+    }
+  };
+
+  const processMessage = (event: any) => {
+    /* eslint-disable no-console */
+    console.log('FILE, ', event.target.files[0]);
+    dispatch(
+      createEntityWithMedia({
+        message: {
+          text: textInput.input.value,
+          chat: chatEntity,
+        },
+        file: event.target.files[0],
+      })
+    );
+  };
+
+  const sendMessage = () => {
+    /* eslint-disable no-console */
+    console.log('MESSAGE, ', textInput.input.value);
+
     sendMessageWebSocket({
-      text: values.text,
+      text: textInput.input.value,
       chat: chatEntity,
     });
   };
@@ -69,8 +94,23 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
         // avatar: 'https://i.pravatar.cc/300',
         text: value.text,
         date: new Date(value.createdAt),
-      };
+      } as any;
     });
+
+  /*  sorted.push({
+      position: 'right',
+      type: 'photo',
+      title: 'Vous',
+      data: {
+        uri: 'https://i.pravatar.cc/300',
+        status: {
+          click: false,
+          loading: 0,
+        }
+      },
+      text: 'hey regarde ça',
+      date: new Date(),
+    });*/
   return (
     <div>
       <Row className="justify-content-center">
@@ -89,19 +129,27 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
           ) : (
             <ValidatedForm onSubmit={sendMessage}>
               <MessageList className="message-list" lockable={true} toBottomHeight={'100%'} dataSource={sorted} />
-              <ValidatedField type="text" name="text" label={translate('userManagement.message')} />
+              <Input
+                placeholder="Type here..."
+                ref={el => getRefMessageInput(el)}
+                rightButtons={
+                  <>
+                    <div className="upload-btn-wrapper">
+                      <Input type="file" id="media" onChange={processMessage} />
+                      <button className="upload-btn">
+                        <img alt="Upload file" src="https://img.icons8.com/metro/26/000000/send-file.png" />
+                      </button>
+                    </div>
+                    <ChatButton color="white" backgroundColor="black" text="Send" />
+                  </>
+                }
+              />
               <Button tag={Link} to="/admin/user-management" replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />
                 &nbsp;
                 <span className="d-none d-md-inline">
                   <Translate contentKey="entity.action.back">Back</Translate>
                 </span>
-              </Button>
-              &nbsp;
-              <Button color="primary" type="submit" disabled={isInvalid}>
-                <FontAwesomeIcon icon="save" />
-                &nbsp;
-                <Translate contentKey="userManagement.action.sendMessage">Save</Translate>
               </Button>
             </ValidatedForm>
           )}

@@ -1,9 +1,10 @@
 package com.sekhmet.sekhmetapi.web.rest;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sekhmet.sekhmetapi.domain.Message;
 import com.sekhmet.sekhmetapi.repository.MessageRepository;
+import com.sekhmet.sekhmetapi.service.ChatLiveService;
 import com.sekhmet.sekhmetapi.service.MessageService;
 import com.sekhmet.sekhmetapi.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -12,7 +13,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -25,6 +25,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -45,11 +46,13 @@ public class MessageResource {
     private String applicationName;
 
     private final MessageService messageService;
+    private final ChatLiveService chatLiveService;
 
     private final MessageRepository messageRepository;
 
-    public MessageResource(MessageService messageService, MessageRepository messageRepository) {
+    public MessageResource(MessageService messageService, ChatLiveService chatLiveService, MessageRepository messageRepository) {
         this.messageService = messageService;
+        this.chatLiveService = chatLiveService;
         this.messageRepository = messageRepository;
     }
 
@@ -67,6 +70,28 @@ public class MessageResource {
             throw new BadRequestAlertException("A new message cannot already have an ID", ENTITY_NAME, "idexists");
         }
         Message result = messageService.save(message);
+        return ResponseEntity
+            .created(new URI("/api/messages/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code POST  /messages} : Create a new message with media
+     *
+     * @param message the message to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new message, or with status {@code 400 (Bad Request)} if the message has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/messages/media")
+    public ResponseEntity<Message> createMessageWithMedia(@RequestParam("message") String messageStr, @RequestParam MultipartFile file)
+        throws URISyntaxException, JsonProcessingException {
+        log.debug("REST request to save Message : {}", messageStr);
+        Message message = new ObjectMapper().readValue(messageStr, Message.class);
+        if (message.getId() != null) {
+            throw new BadRequestAlertException("A new message cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        Message result = chatLiveService.forwardMessageToChat(message.getChat().getId(), message);
         return ResponseEntity
             .created(new URI("/api/messages/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))

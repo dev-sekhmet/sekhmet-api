@@ -58,6 +58,16 @@ export const createEntity = createAsyncThunk(
   },
   { serializeError: serializeAxiosError }
 );
+export const createEntityWithMedia = createAsyncThunk(
+  'message/create_entity_with_media',
+  async (entity: { message: IMessage; file: File }) => {
+    const data: FormData = new FormData();
+    data.append('file', entity.file);
+    data.append('message', JSON.stringify(cleanEntity(entity.message)));
+    return await axios.post<IMessage>(`${apiUrl}/media`, data);
+  },
+  { serializeError: serializeAxiosError }
+);
 
 export const updateEntity = createAsyncThunk(
   'message/update_entity',
@@ -105,6 +115,10 @@ export const MessageSlice = createEntitySlice({
       .addCase(getEntity.fulfilled, (state, action) => {
         state.loading = false;
         state.entity = action.payload.data;
+      })
+      .addCase(createEntityWithMedia.fulfilled, (state, action) => {
+        /* eslint-disable no-console */
+        console.log('FILE FROM SERVER, ', action.payload);
       })
       .addCase(deleteEntity.fulfilled, state => {
         state.updating = false;

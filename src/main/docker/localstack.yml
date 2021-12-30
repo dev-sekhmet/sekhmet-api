@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  localstack:
+    container_name: localstack
+    image: localstack/localstack
+    environment:
+      - HOSTNAME_EXTERNAL=localstack
+      - SERVICES=s3:4575
+    ports:
+      - '4575:4575'

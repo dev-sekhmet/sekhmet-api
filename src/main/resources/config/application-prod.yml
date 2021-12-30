@@ -39,6 +39,10 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
   jpa:
     database-platform: tech.jhipster.domain.util.FixedPostgreSQL10Dialect
   elasticsearch:
