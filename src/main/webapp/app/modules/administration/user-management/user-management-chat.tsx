@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { Button, Col, Row } from 'reactstrap';
-import { Translate, ValidatedForm } from 'react-jhipster';
+import { Storage, Translate, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getRoles, getUser, initChat, leaveChat, reset } from './user-management.reducer';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
@@ -79,7 +79,7 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
   const user = useAppSelector(state => state.userManagement.user);
   const loading = useAppSelector(state => state.userManagement.loading);
   const messages: ReadonlyArray<IMessage> = useAppSelector(state => state.message.entities);
-
+  const token = Storage.local.get('jhi-authenticationToken') || Storage.session.get('jhi-authenticationToken');
   const sorted = [...messages]
     // TODO: Avoid duplicate useEffect call sevral times
     .filter((m, i, self) => i === self.findIndex(m1 => m1.id === m.id))
@@ -87,30 +87,55 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     })
     .map(value => {
+      const getMessageType = (msg: IMessage): { type: string; url: string } => {
+        const media: { type: string; url: string } = { type: 'text', url: '' };
+        if (msg.image) {
+          media.type = 'photo';
+          media.url = msg.image;
+          return media;
+        }
+        if (msg.video) {
+          media.type = 'video';
+          media.url = msg.video;
+          return media;
+        }
+        if (msg.audio) {
+          media.type = 'audio';
+          media.url = msg.audio;
+          return media;
+        }
+        if (msg.file) {
+          media.type = 'file';
+          media.url = msg.file;
+          return media;
+        }
+
+        return media;
+      };
+      const media = getMessageType(value);
       return {
         position: value.user.id === user.id ? 'left' : 'right',
-        type: 'text',
+        type: media.type,
         title: value.user.id === user.id ? user.firstName + ' ' + user.lastName : 'Vous',
         // avatar: 'https://i.pravatar.cc/300',
         text: value.text,
         date: new Date(value.createdAt),
+        data: {
+          uri: `http://localhost:8080/api/messages/media/${media.url}?access_token=${token}`,
+        },
       } as any;
     });
 
-  /*  sorted.push({
-      position: 'right',
-      type: 'photo',
-      title: 'Vous',
-      data: {
-        uri: 'https://i.pravatar.cc/300',
-        status: {
-          click: false,
-          loading: 0,
-        }
-      },
-      text: 'hey regarde ça',
-      date: new Date(),
-    });*/
+  sorted.push({
+    position: 'right',
+    type: 'video',
+    title: 'Vous',
+    data: {
+      uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    },
+    text: 'hey regarde ça',
+    date: new Date(),
+  });
   return (
     <div>
       <Row className="justify-content-center">
@@ -128,7 +153,7 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
             <p>Loading...</p>
           ) : (
             <ValidatedForm onSubmit={sendMessage}>
-              <MessageList className="message-list" lockable={true} toBottomHeight={'100%'} dataSource={sorted} />
+              <MessageList lockable={true} toBottomHeight={'100%'} dataSource={sorted} />
               <Input
                 placeholder="Type here..."
                 ref={el => getRefMessageInput(el)}

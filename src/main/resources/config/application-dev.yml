@@ -131,4 +131,8 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  s3:
+    region: 'eu-west-3'
+    endpoint: 'http://localhost:4566'
+    bucket: 'testbucket'

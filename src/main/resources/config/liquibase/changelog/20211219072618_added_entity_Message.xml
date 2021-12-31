@@ -13,22 +13,25 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="text" type="varchar(255)">
-                <constraints nullable="true" />
+                <constraints nullable="true"/>
             </column>
             <column name="created_at" type="timestamp">
                 <constraints nullable="true"/>
             </column>
             <column name="image" type="varchar(255)">
-                <constraints nullable="true" />
+                <constraints nullable="true"/>
+            </column>
+            <column name="file" type="varchar(255)">
+                <constraints nullable="true"/>
             </column>
             <column name="video" type="varchar(255)">
-                <constraints nullable="true" />
+                <constraints nullable="true"/>
             </column>
             <column name="audio" type="varchar(255)">
-                <constraints nullable="true" />
+                <constraints nullable="true"/>
             </column>
             <column name="system" type="boolean">
-                <constraints nullable="true" />
+                <constraints nullable="true"/>
             </column>
             <column name="sent" type="boolean">
                 <constraints nullable="true" />

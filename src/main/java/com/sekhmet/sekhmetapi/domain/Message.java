@@ -1,9 +1,9 @@
 package com.sekhmet.sekhmetapi.domain;
 
+import static com.sekhmet.sekhmetapi.service.S3Service.*;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.persistence.*;
@@ -44,6 +44,10 @@ public class Message implements Serializable {
     @Column(name = "video")
     @Field(type = FieldType.Keyword)
     private String video;
+
+    @Column(name = "file")
+    @Field(type = FieldType.Keyword)
+    private String file;
 
     @Column(name = "audio")
     @Field(type = FieldType.Keyword)
@@ -111,6 +115,23 @@ public class Message implements Serializable {
         return this;
     }
 
+    public Message setMedia(String mediaType, String url) {
+        switch (mediaType) {
+            case IMAGE:
+                this.setImage(url);
+                break;
+            case VIDEO:
+                this.setVideo(url);
+                break;
+            case AUDIO:
+                this.setAudio(url);
+                break;
+            default:
+                this.setFile(url);
+        }
+        return this;
+    }
+
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
@@ -122,6 +143,14 @@ public class Message implements Serializable {
     public Message image(String image) {
         this.setImage(image);
         return this;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
     }
 
     public void setImage(String image) {

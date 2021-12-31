@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { IChat } from 'app/shared/model/chat.model';
 import { IUser } from 'app/shared/model/user.model';
 
@@ -8,6 +7,7 @@ export interface IMessage {
   createdAt?: string | null;
   image?: string | null;
   video?: string | null;
+  file?: string | null;
   audio?: string | null;
   system?: boolean | null;
   sent?: boolean | null;

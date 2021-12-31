@@ -1,12 +1,18 @@
 package com.sekhmet.sekhmetapi.web.rest;
 
+import com.amazonaws.services.s3.model.S3Object;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sekhmet.sekhmetapi.domain.Message;
 import com.sekhmet.sekhmetapi.repository.MessageRepository;
 import com.sekhmet.sekhmetapi.service.ChatLiveService;
 import com.sekhmet.sekhmetapi.service.MessageService;
+import com.sekhmet.sekhmetapi.service.S3Service;
+import com.sekhmet.sekhmetapi.service.UserService;
 import com.sekhmet.sekhmetapi.web.rest.errors.BadRequestAlertException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -15,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +30,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -47,12 +57,22 @@ public class MessageResource {
 
     private final MessageService messageService;
     private final ChatLiveService chatLiveService;
+    private final S3Service s3Service;
+    private final UserService userService;
 
     private final MessageRepository messageRepository;
 
-    public MessageResource(MessageService messageService, ChatLiveService chatLiveService, MessageRepository messageRepository) {
+    public MessageResource(
+        MessageService messageService,
+        ChatLiveService chatLiveService,
+        S3Service s3Service,
+        UserService userService,
+        MessageRepository messageRepository
+    ) {
         this.messageService = messageService;
         this.chatLiveService = chatLiveService;
+        this.s3Service = s3Service;
+        this.userService = userService;
         this.messageRepository = messageRepository;
     }
 
@@ -79,7 +99,8 @@ public class MessageResource {
     /**
      * {@code POST  /messages} : Create a new message with media
      *
-     * @param message the message to create.
+     * @param messageStr the message to create.
+     * @param file       media file
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new message, or with status {@code 400 (Bad Request)} if the message has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
@@ -91,11 +112,50 @@ public class MessageResource {
         if (message.getId() != null) {
             throw new BadRequestAlertException("A new message cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Message result = chatLiveService.forwardMessageToChat(message.getChat().getId(), message);
+        // save to have image id
+        message.setUser(userService.getUserWithAuthorities().get());
+        Message result = messageService.save(message);
+
+        // save file
+        S3Service.PutResult putResult = s3Service.putMedia(result.getId().toString(), file);
+
+        // set url to message en forward message
+        result.setMedia(putResult.getFileType(), putResult.getKey());
+        result = chatLiveService.forwardMessageToChat(result.getChat().getId(), result);
         return ResponseEntity
             .created(new URI("/api/messages/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
+    }
+
+    /**
+     * {@code GET  /messages/:messageId/:fileType/:fileId} : get the file.
+     *
+     * @param fileId the id of the message media to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the message, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/messages/media/{messageId}/{fileType}/{fileId}")
+    public ResponseEntity<byte[]> getMessageMedia(
+        @PathVariable String messageId,
+        @PathVariable String fileType,
+        @PathVariable String fileId
+    ) {
+        log.debug("REST request to get Media : {}", fileId);
+
+        S3Object media = s3Service.getMedia(messageId, fileType, fileId);
+        try (InputStream in = media.getObjectContent()) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IOUtils.copy(in, baos);
+            byte[] fileBytes = baos.toByteArray();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaTypes(media.getObjectMetadata().getContentType()).get(0));
+            headers.setContentLength(fileBytes.length);
+            return ResponseUtil.wrapOrNotFound(Optional.of(fileBytes), headers);
+        } catch (IOException e) {
+            log.error("IO error ", e);
+        }
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**

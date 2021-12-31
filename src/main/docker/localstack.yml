@@ -1,10 +1,22 @@
 version: '3.8'
 services:
-  localstack:
-    container_name: localstack
+  sekhmetapi-localstack:
     image: localstack/localstack
-    environment:
-      - HOSTNAME_EXTERNAL=localstack
-      - SERVICES=s3:4575
     ports:
-      - '4575:4575'
+      - '54:54'
+      - '443:443'
+      - '4510-4520:4510-4520'
+      - '4566-4620:4566-4620'
+      - '8081:8081'
+    environment:
+      - LOCALSTACK_API_KEY=NONE
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - SERVICES=s3
+      - AWS_REGION=eu-west-3
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - '${TMPDIR:-/tmp/localstack}:/tmp/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+# aws --endpoint-url=http://localhost:4566 s3 mb s3://testbucket
+# aws s3 ls --recursive --endpoint-url=http://localhost:4566  s3://testbucket
