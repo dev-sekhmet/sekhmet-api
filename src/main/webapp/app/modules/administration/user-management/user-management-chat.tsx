@@ -9,9 +9,10 @@ import { receiver, sendMessageWebSocket } from 'app/config/websocket-middleware-
 import { getChatByUser } from 'app/entities/chat/chat.reducer';
 import { createEntityWithMedia, getMessagesByChat, websocketChatMessage } from 'app/entities/message/message.reducer';
 import { IMessage } from 'app/shared/model/message.model';
-import { Button as ChatButton, Input, MessageList } from 'react-chat-elements';
+import { Button as ChatButton, Input } from 'react-chat-elements';
 import 'react-chat-elements/dist/main.css';
 import './chat.css';
+import MessageList from 'app/shared/component/message-list';
 
 export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) => {
   const dispatch = useAppDispatch();
@@ -80,6 +81,7 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
   const loading = useAppSelector(state => state.userManagement.loading);
   const messages: ReadonlyArray<IMessage> = useAppSelector(state => state.message.entities);
   const token = Storage.local.get('jhi-authenticationToken') || Storage.session.get('jhi-authenticationToken');
+
   const sorted = [...messages]
     // TODO: Avoid duplicate useEffect call sevral times
     .filter((m, i, self) => i === self.findIndex(m1 => m1.id === m.id))
@@ -114,28 +116,18 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
       };
       const media = getMessageType(value);
       return {
-        position: value.user.id === user.id ? 'left' : 'right',
         type: media.type,
+        isMe: value.user.id !== user.id,
         title: value.user.id === user.id ? user.firstName + ' ' + user.lastName : 'Vous',
         // avatar: 'https://i.pravatar.cc/300',
         text: value.text,
         date: new Date(value.createdAt),
         data: {
           uri: `http://localhost:8080/api/messages/media/${media.url}?access_token=${token}`,
+          contentTypeMedia: value.contentTypeMedia,
         },
       } as any;
     });
-
-  sorted.push({
-    position: 'right',
-    type: 'video',
-    title: 'Vous',
-    data: {
-      uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    },
-    text: 'hey regarde ça',
-    date: new Date(),
-  });
   return (
     <div>
       <Row className="justify-content-center">

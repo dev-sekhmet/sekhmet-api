@@ -24,6 +24,9 @@
             <column name="file" type="varchar(255)">
                 <constraints nullable="true"/>
             </column>
+            <column name="content_type_media" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
             <column name="video" type="varchar(255)">
                 <constraints nullable="true"/>
             </column>

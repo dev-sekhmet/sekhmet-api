@@ -1,6 +1,6 @@
 package com.sekhmet.sekhmetapi.domain;
 
-import static com.sekhmet.sekhmetapi.service.S3Service.*;
+import static com.sekhmet.sekhmetapi.service.utils.FileUtils.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
@@ -52,6 +52,10 @@ public class Message implements Serializable {
     @Column(name = "audio")
     @Field(type = FieldType.Keyword)
     private String audio;
+
+    @Column(name = "content_type_media")
+    @Field(type = FieldType.Keyword)
+    private String contentTypeMedia;
 
     @Column(name = "system")
     @Field(type = FieldType.Object, enabled = false)
@@ -116,7 +120,8 @@ public class Message implements Serializable {
     }
 
     public Message setMedia(String mediaType, String url) {
-        switch (mediaType) {
+        this.contentTypeMedia(mediaType);
+        switch (getFileType(mediaType)) {
             case IMAGE:
                 this.setImage(url);
                 break;
@@ -129,6 +134,19 @@ public class Message implements Serializable {
             default:
                 this.setFile(url);
         }
+        return this;
+    }
+
+    public String getContentTypeMedia() {
+        return contentTypeMedia;
+    }
+
+    public void setContentTypeMedia(String contentTypeMedia) {
+        this.contentTypeMedia = contentTypeMedia;
+    }
+
+    public Message contentTypeMedia(String contentTypeMedia) {
+        setContentTypeMedia(contentTypeMedia);
         return this;
     }
 

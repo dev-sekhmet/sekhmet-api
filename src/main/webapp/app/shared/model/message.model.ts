@@ -9,6 +9,7 @@ export interface IMessage {
   video?: string | null;
   file?: string | null;
   audio?: string | null;
+  contentTypeMedia?: string | null;
   system?: boolean | null;
   sent?: boolean | null;
   received?: boolean | null;
