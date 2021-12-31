@@ -5,7 +5,6 @@ import static com.sekhmet.sekhmetapi.service.utils.FileUtils.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.sekhmet.sekhmetapi.service.utils.FileUtils;
-import com.sekhmet.sekhmetapi.web.rest.MessageResource;
 import java.io.InputStream;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -19,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class S3Service {
 
-    private final Logger log = LoggerFactory.getLogger(MessageResource.class);
+    private final Logger log = LoggerFactory.getLogger(S3Service.class);
     private final AmazonS3 amazonS3;
 
     @Value("${application.s3.bucket}")
