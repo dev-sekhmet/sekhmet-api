@@ -4,8 +4,6 @@ import { createAsyncThunk, createSlice, isFulfilled, isPending, isRejected } fro
 import { defaultValue, IUser } from 'app/shared/model/user.model';
 import { IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import { initChatWebSocket, leaveChatWebSocket } from 'app/config/websocket-middleware-chat';
-import { IChat } from 'app/shared/model/chat.model';
-import { Observable } from 'rxjs';
 
 const initialState = {
   loading: false,
@@ -110,13 +108,9 @@ export const UserManagementSlice = createSlice({
         state.authorities = action.payload.data;
       })
       .addCase(initChat.fulfilled, (state, action) => {
-        // eslint-disable-next-line no-console
-        console.log('receiver ', action.payload);
         state.receiver = action.payload;
       })
       .addCase(leaveChat.fulfilled, (state, action) => {
-        // eslint-disable-next-line no-console
-        console.log('receiver ', action.payload);
         state.receiver = action.payload;
       })
       .addCase(getUser.fulfilled, (state, action) => {

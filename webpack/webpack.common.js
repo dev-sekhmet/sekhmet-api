@@ -77,7 +77,7 @@ module.exports = async options => {
           /*
        ,
        Disabled due to https://github.com/jhipster/generator-jhipster/issues/16116
-       Can be enabled with @reduxjs/toolkit@>1.6.1 
+       Can be enabled with @reduxjs/toolkit@>1.6.1
       {
         enforce: 'pre',
         test: /\.jsx?$/,

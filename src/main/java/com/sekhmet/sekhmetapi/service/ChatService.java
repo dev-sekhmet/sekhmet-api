@@ -1,7 +1,5 @@
 package com.sekhmet.sekhmetapi.service;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
 import com.sekhmet.sekhmetapi.domain.Chat;
 import com.sekhmet.sekhmetapi.repository.ChatRepository;
 import com.sekhmet.sekhmetapi.repository.search.ChatSearchRepository;
@@ -41,9 +39,7 @@ public class ChatService {
     public Chat save(Chat chat) {
         log.debug("Request to save Chat : {}", chat);
         Chat result = chatRepository.save(chat);
-        // avoid java.lang.StackOverflowError: null
-        //result.getMembers().forEach(chatMember -> chatMember.setChat(null));
-        // chatSearchRepository.save(result);
+        //chatSearchRepository.save(result);
         return result;
     }
 

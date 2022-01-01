@@ -1,12 +1,13 @@
 package com.sekhmet.sekhmetapi.domain;
 
+import static com.sekhmet.sekhmetapi.service.utils.FileUtils.*;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -35,6 +36,7 @@ public class Message implements Serializable {
 
     @Column(name = "created_at")
     @Field(type = FieldType.Keyword)
+    @NotNull
     private LocalDateTime createdAt;
 
     @Column(name = "image")
@@ -45,9 +47,17 @@ public class Message implements Serializable {
     @Field(type = FieldType.Keyword)
     private String video;
 
+    @Column(name = "file")
+    @Field(type = FieldType.Keyword)
+    private String file;
+
     @Column(name = "audio")
     @Field(type = FieldType.Keyword)
     private String audio;
+
+    @Column(name = "content_type_media")
+    @Field(type = FieldType.Keyword)
+    private String contentTypeMedia;
 
     @Column(name = "system")
     @Field(type = FieldType.Object, enabled = false)
@@ -111,6 +121,37 @@ public class Message implements Serializable {
         return this;
     }
 
+    public Message setMedia(String mediaType, String url) {
+        this.contentTypeMedia(mediaType);
+        switch (getFileType(mediaType)) {
+            case IMAGE:
+                this.setImage(url);
+                break;
+            case VIDEO:
+                this.setVideo(url);
+                break;
+            case AUDIO:
+                this.setAudio(url);
+                break;
+            default:
+                this.setFile(url);
+        }
+        return this;
+    }
+
+    public String getContentTypeMedia() {
+        return contentTypeMedia;
+    }
+
+    public void setContentTypeMedia(String contentTypeMedia) {
+        this.contentTypeMedia = contentTypeMedia;
+    }
+
+    public Message contentTypeMedia(String contentTypeMedia) {
+        setContentTypeMedia(contentTypeMedia);
+        return this;
+    }
+
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
@@ -122,6 +163,14 @@ public class Message implements Serializable {
     public Message image(String image) {
         this.setImage(image);
         return this;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
     }
 
     public void setImage(String image) {

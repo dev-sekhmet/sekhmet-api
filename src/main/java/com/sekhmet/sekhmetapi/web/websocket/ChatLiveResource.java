@@ -6,9 +6,8 @@ import com.sekhmet.sekhmetapi.domain.Chat;
 import com.sekhmet.sekhmetapi.domain.Message;
 import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.security.SecurityUtils;
+import com.sekhmet.sekhmetapi.service.ChatLiveService;
 import com.sekhmet.sekhmetapi.service.ChatService;
-import com.sekhmet.sekhmetapi.service.MessageService;
-import com.sekhmet.sekhmetapi.service.UserService;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -30,20 +29,14 @@ public class ChatLiveResource implements ApplicationListener<SessionDisconnectEv
     private static final Logger log = LoggerFactory.getLogger(ChatLiveResource.class);
 
     private final SimpMessageSendingOperations messagingTemplate;
-    private final UserService userService;
-    private final ChatService chatService;
-    private final MessageService messageService;
 
-    public ChatLiveResource(
-        SimpMessageSendingOperations messagingTemplate,
-        UserService userService,
-        ChatService chatService,
-        MessageService messageService
-    ) {
+    private final ChatService chatService;
+    private final ChatLiveService chatLiveService;
+
+    public ChatLiveResource(SimpMessageSendingOperations messagingTemplate, ChatService chatService, ChatLiveService chatLiveService) {
         this.messagingTemplate = messagingTemplate;
-        this.userService = userService;
         this.chatService = chatService;
-        this.messageService = messageService;
+        this.chatLiveService = chatLiveService;
     }
 
     @SubscribeMapping("/chat/{chatId}")
@@ -61,17 +54,8 @@ public class ChatLiveResource implements ApplicationListener<SessionDisconnectEv
     }
 
     @MessageMapping("/chat/{chatId}/sent")
-    public void sendChat(
-        @DestinationVariable("chatId") String chatId,
-        @Payload Message message,
-        StompHeaderAccessor stompHeaderAccessor,
-        Principal principal
-    ) {
-        message.setUser(userService.getUserWithAuthorities().get());
-        message.createdAt(LocalDateTime.now());
-        message = messageService.save(message);
-        log.debug("Sending user chat data {}", message);
-        messagingTemplate.convertAndSend("/chat/" + chatId, message);
+    public void sendChat(@DestinationVariable("chatId") UUID chatId, @Payload Message message) {
+        chatLiveService.forwardMessageToChat(chatId, message);
     }
 
     @Override
