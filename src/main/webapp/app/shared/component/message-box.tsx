@@ -84,7 +84,7 @@ const styles = {
     alignItems: 'center',
   },
   boxDateTime: {
-    textAlign: 'right' as 'right',
+    textAlign: 'right' as const,
     color: 'rgba(0, 0, 0, 0.45)',
     right: -4,
     bottom: -5,

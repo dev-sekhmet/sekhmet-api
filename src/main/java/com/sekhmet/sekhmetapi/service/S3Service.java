@@ -37,8 +37,9 @@ public class S3Service {
             if (MediaTypeFactory.getMediaType(fileName).isPresent()) {
                 mediaType = MediaTypeFactory.getMediaType(fileName).get();
                 log.debug("spring mediaType {}", mediaType);
+            } else {
+                mediaType = (MediaType.parseMediaTypes(file.getContentType()).get(0));
             }
-            assert mediaType != null;
             String fileType = FileUtils.getFileType(mediaType.toString());
 
             meta.setContentLength(content.available());
