@@ -3,8 +3,10 @@ import 'react-chat-elements/dist/main.css';
 import PhotoMessage from 'app/shared/component/photo-message-box';
 import VideoMessage from 'app/shared/component/video-message-box';
 import AudioMessage from 'app/shared/component/audio-box-message';
+import { format } from 'timeago.js';
 
 export const MessageBox = (props: any) => {
+  const dateText = props.date ? format(props.date) : null;
   return (
     <div style={props.isMe ? styles.rightContainer : styles.leftContainer} onClick={props.onClick}>
       {props.title && (
@@ -39,6 +41,7 @@ export const MessageBox = (props: any) => {
         />
       )}
       {props.text && <div>{props.text}</div>}
+      {dateText && <div style={styles.boxDateTime}>{dateText}</div>}
     </div>
   );
 };
@@ -79,6 +82,12 @@ const styles = {
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
+  },
+  boxDateTime: {
+    textAlign: 'right' as 'right',
+    color: 'rgba(0, 0, 0, 0.45)',
+    right: -4,
+    bottom: -5,
   },
 };
 export default MessageBox;

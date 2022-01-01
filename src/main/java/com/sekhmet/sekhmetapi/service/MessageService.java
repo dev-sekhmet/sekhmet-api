@@ -3,6 +3,7 @@ package com.sekhmet.sekhmetapi.service;
 import com.sekhmet.sekhmetapi.domain.Message;
 import com.sekhmet.sekhmetapi.repository.MessageRepository;
 import com.sekhmet.sekhmetapi.repository.search.MessageSearchRepository;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -38,6 +39,9 @@ public class MessageService {
      */
     public Message save(Message message) {
         log.debug("Request to save Message : {}", message);
+        if (message.getCreatedAt() == null) {
+            message.setCreatedAt(LocalDateTime.now());
+        }
         Message result = messageRepository.save(message);
         //messageSearchRepository.save(result);
         return result;

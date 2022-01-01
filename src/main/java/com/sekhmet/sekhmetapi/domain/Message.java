@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -35,6 +36,7 @@ public class Message implements Serializable {
 
     @Column(name = "created_at")
     @Field(type = FieldType.Keyword)
+    @NotNull
     private LocalDateTime createdAt;
 
     @Column(name = "image")

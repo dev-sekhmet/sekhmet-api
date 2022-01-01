@@ -45,6 +45,7 @@
             <column name="id" type="${uuidType}"/>
             <column name="scope" type="string"/>
             <column name="user_id" type="${uuidType}"/>
+            <column name="chat_id" type="${uuidType}"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>

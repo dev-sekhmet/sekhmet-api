@@ -6,7 +6,7 @@ public class FileUtils {
     public static final String VIDEO = "video";
     public static final String AUDIO = "audio";
     public static final String FILE = "file";
-    public static final String KEY_FORMAT = "%s/%s/%s";
+    public static final String KEY_FORMAT = "chat-content/%s/%s/%s";
     public static final String UNDERSCORE = "_";
     public static final String HIPHEN = "-";
 

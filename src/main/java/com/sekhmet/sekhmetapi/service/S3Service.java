@@ -28,7 +28,7 @@ public class S3Service {
         this.amazonS3 = amazonS3;
     }
 
-    public PutResult putMedia(String messageId, MultipartFile file) {
+    public PutResult putMedia(String chatId, MultipartFile file) {
         try {
             InputStream content = file.getInputStream();
             ObjectMetadata meta = new ObjectMetadata();
@@ -43,7 +43,7 @@ public class S3Service {
 
             meta.setContentLength(content.available());
             meta.setContentType(mediaType.toString());
-            String key = buildKey(messageId, fileType, file);
+            String key = buildKey(chatId, fileType, file);
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, content, meta);
 
             putObjectRequest = putObjectRequest.withCannedAcl(CannedAccessControlList.AuthenticatedRead);
@@ -59,19 +59,19 @@ public class S3Service {
         return null;
     }
 
-    private String buildKey(String messageId, String fileType, MultipartFile file) {
+    private String buildKey(String chatId, String fileType, MultipartFile file) {
         String name = file.getOriginalFilename();
         assert name != null;
         String fileId = UUID.randomUUID() + HIPHEN + name.replace(" ", UNDERSCORE);
-        return buildKey(messageId, fileType, fileId);
+        return buildKey(chatId, fileType, fileId);
     }
 
-    private String buildKey(String messageId, String fileType, String fileId) {
-        return String.format(KEY_FORMAT, messageId, fileType, fileId);
+    private String buildKey(String chatId, String fileType, String fileId) {
+        return String.format(KEY_FORMAT, chatId, fileType, fileId);
     }
 
-    public S3Object getMedia(String messageId, String fileType, String fileId) {
-        String key = buildKey(messageId, fileType, fileId);
+    public S3Object getMedia(String chatId, String fileType, String fileId) {
+        String key = buildKey(chatId, fileType, fileId);
         return amazonS3.getObject(bucket, key);
     }
 

@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import MessageBox from 'app/shared/component/message-box';
 
 export const MessageList = (props: any) => {
-  const [downButton, setDownButton] = useState(false);
-
   return (
     <div>
       <div>

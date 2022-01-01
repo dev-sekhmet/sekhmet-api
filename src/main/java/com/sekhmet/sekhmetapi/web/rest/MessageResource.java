@@ -116,12 +116,13 @@ public class MessageResource {
         message.setUser(userService.getUserWithAuthorities().get());
         Message result = messageService.save(message);
 
-        // save file
-        S3Service.PutResult putResult = s3Service.putMedia(result.getId().toString(), file);
+        // save media file to s3
+        UUID chatId = result.getChat().getId();
+        S3Service.PutResult putResult = s3Service.putMedia(chatId.toString(), file);
 
         // set url to message en forward message
         result.setMedia(putResult.getFileType(), putResult.getKey());
-        result = chatLiveService.forwardMessageToChat(result.getChat().getId(), result);
+        result = chatLiveService.forwardMessageToChat(chatId, result);
         return ResponseEntity
             .created(new URI("/api/messages/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
@@ -134,15 +135,11 @@ public class MessageResource {
      * @param fileId the id of the message media to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the message, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/messages/media/{messageId}/{fileType}/{fileId}")
-    public ResponseEntity<byte[]> getMessageMedia(
-        @PathVariable String messageId,
-        @PathVariable String fileType,
-        @PathVariable String fileId
-    ) {
+    @GetMapping("/messages/media/chat-content/{chatId}/{fileType}/{fileId}")
+    public ResponseEntity<byte[]> getMessageMedia(@PathVariable String chatId, @PathVariable String fileType, @PathVariable String fileId) {
         log.debug("REST request to get Media : {}", fileId);
 
-        S3Object media = s3Service.getMedia(messageId, fileType, fileId);
+        S3Object media = s3Service.getMedia(chatId, fileType, fileId);
         try (InputStream in = media.getObjectContent()) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             IOUtils.copy(in, baos);
