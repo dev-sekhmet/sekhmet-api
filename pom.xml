@@ -4,7 +4,7 @@
 
     <groupId>com.sekhmet.sekhmetapi</groupId>
     <artifactId>sekhmet-api</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Sekhmet Api</name>
     <description>Description for sekhmetApi</description>
