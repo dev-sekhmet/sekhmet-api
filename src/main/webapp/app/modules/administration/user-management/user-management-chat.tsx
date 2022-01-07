@@ -55,8 +55,6 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
   };
 
   const processMessage = (event: any) => {
-    /* eslint-disable no-console */
-    console.log('FILE, ', event.target.files[0]);
     dispatch(
       createEntityWithMedia({
         message: {
@@ -123,7 +121,7 @@ export const UserManagementChat = (props: RouteComponentProps<{ id: string }>) =
         text: value.text,
         date: new Date(value.createdAt),
         data: {
-          uri: `http://localhost:8080/api/messages/media/${media.url}?access_token=${token}`,
+          uri: `/api/messages/media/${media.url}?access_token=${token}`,
           contentTypeMedia: value.contentTypeMedia,
         },
       } as any;
