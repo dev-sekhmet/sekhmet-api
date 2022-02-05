@@ -58,6 +58,12 @@ public class UserJWTController {
         return ResponseEntity.ok(status);
     }
 
+    /**
+     * Login or signup via phone number
+     *
+     * @param request
+     * @return
+     */
     @GetMapping("/verify")
     public ResponseEntity<JWTToken> verify(CheckPhoneVerificationRequest request) {
         VerificationStatus status = smsService.checkVerificationCode(request);
