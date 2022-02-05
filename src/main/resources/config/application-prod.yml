@@ -144,3 +144,9 @@ application:
     region: 'eu-west-3'
     endpoint: 'http://localhost:4566'
     bucket: 'media-bucket'
+  sms:
+    twilio:
+      account-sid:
+      auth-token:
+      verify-sid:
+    password-phone-number-secret:

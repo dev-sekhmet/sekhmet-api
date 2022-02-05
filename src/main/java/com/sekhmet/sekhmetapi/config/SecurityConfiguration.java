@@ -1,7 +1,8 @@
 package com.sekhmet.sekhmetapi.config;
 
-import com.sekhmet.sekhmetapi.security.*;
-import com.sekhmet.sekhmetapi.security.jwt.*;
+import com.sekhmet.sekhmetapi.security.AuthoritiesConstants;
+import com.sekhmet.sekhmetapi.security.jwt.JWTConfigurer;
+import com.sekhmet.sekhmetapi.security.jwt.TokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
@@ -77,15 +78,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
         .and()
             .permissionsPolicy().policy("camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()")
-        .and()
+            .and()
             .frameOptions()
             .deny()
-        .and()
+            .and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
+            .and()
             .authorizeRequests()
             .antMatchers("/api/authenticate").permitAll()
+            .antMatchers("/api/login").permitAll()
+            .antMatchers("/api/verify").permitAll()
             .antMatchers("/api/register").permitAll()
             .antMatchers("/api/activate").permitAll()
             .antMatchers("/api/account/reset-password/init").permitAll()

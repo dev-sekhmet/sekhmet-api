@@ -67,6 +67,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Field(type = FieldType.Keyword)
     private String email;
 
+    @Size(min = 8, max = 60)
+    @Column(name = "phone_number", length = 254, unique = true)
+    @Field(type = FieldType.Keyword)
+    private String phoneNumber;
+
     @NotNull
     @Column(nullable = false)
     @Field(type = FieldType.Object, enabled = false)
@@ -118,6 +123,15 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     public String getLogin() {
         return login;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public User setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+        return this;
     }
 
     // Lowercase the login before saving it in database

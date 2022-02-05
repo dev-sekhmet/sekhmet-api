@@ -7,10 +7,12 @@ import com.sekhmet.sekhmetapi.service.MailService;
 import com.sekhmet.sekhmetapi.service.UserService;
 import com.sekhmet.sekhmetapi.service.dto.AdminUserDTO;
 import com.sekhmet.sekhmetapi.service.dto.PasswordChangeDTO;
-import com.sekhmet.sekhmetapi.web.rest.errors.*;
+import com.sekhmet.sekhmetapi.web.rest.errors.EmailAlreadyUsedException;
+import com.sekhmet.sekhmetapi.web.rest.errors.InvalidPasswordException;
+import com.sekhmet.sekhmetapi.web.rest.errors.LoginAlreadyUsedException;
 import com.sekhmet.sekhmetapi.web.rest.vm.KeyAndPasswordVM;
 import com.sekhmet.sekhmetapi.web.rest.vm.ManagedUserVM;
-import java.util.*;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +63,7 @@ public class AccountResource {
         if (isPasswordLengthInvalid(managedUserVM.getPassword())) {
             throw new InvalidPasswordException();
         }
-        User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
+        User user = userService.registerUser(managedUserVM, managedUserVM.getPassword(), false);
         mailService.sendActivationEmail(user);
     }
 
