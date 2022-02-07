@@ -12,7 +12,6 @@ import com.sekhmet.sekhmetapi.security.SecurityUtils;
 import com.sekhmet.sekhmetapi.service.dto.AdminUserDTO;
 import com.sekhmet.sekhmetapi.service.dto.UserDTO;
 import com.sekhmet.sekhmetapi.service.dto.sms.CheckPhoneVerificationRequest;
-import com.sekhmet.sekhmetapi.web.rest.vm.ManagedUserVM;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -81,7 +80,7 @@ public class UserService {
 
     public User registerUserByPhoneNumber(CheckPhoneVerificationRequest request) {
         log.debug("register User By PhoneNumber {}", request.getPhoneNumber());
-        ManagedUserVM managedUserVM = new ManagedUserVM();
+        AdminUserDTO managedUserVM = new AdminUserDTO();
         // set mandatory fields
         String phoneLogin = buildPhoneLogin(request);
         managedUserVM.setLogin(phoneLogin);
