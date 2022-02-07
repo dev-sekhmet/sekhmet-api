@@ -68,10 +68,17 @@ public class UserJWTController {
     public ResponseEntity<JWTToken> verify(CheckPhoneVerificationRequest request) {
         VerificationStatus status = smsService.checkVerificationCode(request);
         if (status == null) {
-            throw new BadRequestAlertException("An error occur during Verification Code Send", ENTITY_NAME, "errorSendVerificationCode");
+            throw new BadRequestAlertException("An error occur during Verification Code Send", ENTITY_NAME, "errorCheckVerificationCode");
         }
         if (status == VerificationStatus.CANCELED) {
-            throw new BadRequestAlertException("An error occurred request canceled", ENTITY_NAME, "errorSendVerificationCodeCanceled");
+            throw new BadRequestAlertException("An error occurred request canceled", ENTITY_NAME, "errorCheckVerificationCodeCanceled");
+        }
+        if (status == VerificationStatus.PENDING) {
+            throw new BadRequestAlertException(
+                "An error occurred request pending (wrong code)",
+                ENTITY_NAME,
+                "errorCheckVerificationIncorrectCode"
+            );
         }
 
         Optional<User> userOptional = userService.getUserByPhoneNumber(request.getPhoneNumber());
