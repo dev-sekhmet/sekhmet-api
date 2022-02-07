@@ -1,5 +1,6 @@
 package com.sekhmet.sekhmetapi.service;
 
+import com.sekhmet.sekhmetapi.config.ApplicationProperties;
 import com.sekhmet.sekhmetapi.config.Constants;
 import com.sekhmet.sekhmetapi.domain.Authority;
 import com.sekhmet.sekhmetapi.domain.User;
@@ -10,6 +11,8 @@ import com.sekhmet.sekhmetapi.security.AuthoritiesConstants;
 import com.sekhmet.sekhmetapi.security.SecurityUtils;
 import com.sekhmet.sekhmetapi.service.dto.AdminUserDTO;
 import com.sekhmet.sekhmetapi.service.dto.UserDTO;
+import com.sekhmet.sekhmetapi.service.dto.sms.CheckPhoneVerificationRequest;
+import com.sekhmet.sekhmetapi.web.rest.vm.ManagedUserVM;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -43,19 +46,22 @@ public class UserService {
     private final AuthorityRepository authorityRepository;
 
     private final CacheManager cacheManager;
+    private final String password;
 
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
         UserSearchRepository userSearchRepository,
         AuthorityRepository authorityRepository,
-        CacheManager cacheManager
+        CacheManager cacheManager,
+        ApplicationProperties applicationProperties
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userSearchRepository = userSearchRepository;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
+        password = applicationProperties.getSms().getPasswordPhoneNumberSecret();
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -71,6 +77,31 @@ public class UserService {
                 log.debug("Activated user: {}", user);
                 return user;
             });
+    }
+
+    public User registerUserByPhoneNumber(CheckPhoneVerificationRequest request) {
+        log.debug("register User By PhoneNumber {}", request.getPhoneNumber());
+        ManagedUserVM managedUserVM = new ManagedUserVM();
+        // set mandatory fields
+        String phoneLogin = buildPhoneLogin(request);
+        managedUserVM.setLogin(phoneLogin);
+        managedUserVM.setPhoneNumber(request.getPhoneNumber());
+        managedUserVM.setLangKey(request.getLangKey());
+        managedUserVM.setEmail(String.format("user.%s@mail.com", phoneLogin));
+        return registerUser(managedUserVM, buildPhoneLoginPassword(phoneLogin), true);
+    }
+
+    public String buildPhoneLogin(CheckPhoneVerificationRequest request) {
+        return request.getPhoneNumber().replace("+", "");
+    }
+
+    public String buildPhoneLoginPassword(String phoneLogin) {
+        return String.format("sekhmetPhoneLoginPassword%s%s", phoneLogin, password);
+    }
+
+    public Optional<User> getUserByPhoneNumber(String phoneNumber) {
+        log.debug("Get user by phoneNumber {}", phoneNumber);
+        return userRepository.findOneByPhoneNumber(phoneNumber);
     }
 
     public Optional<User> completePasswordReset(String newPassword, String key) {
@@ -99,7 +130,7 @@ public class UserService {
             });
     }
 
-    public User registerUser(AdminUserDTO userDTO, String password) {
+    public User registerUser(AdminUserDTO userDTO, String password, boolean activate) {
         userRepository
             .findOneByLogin(userDTO.getLogin().toLowerCase())
             .ifPresent(existingUser -> {
@@ -123,15 +154,17 @@ public class UserService {
         newUser.setPassword(encryptedPassword);
         newUser.setFirstName(userDTO.getFirstName());
         newUser.setLastName(userDTO.getLastName());
+        newUser.setPhoneNumber(userDTO.getPhoneNumber());
         if (userDTO.getEmail() != null) {
             newUser.setEmail(userDTO.getEmail().toLowerCase());
         }
         newUser.setImageUrl(userDTO.getImageUrl());
         newUser.setLangKey(userDTO.getLangKey());
-        // new user is not active
-        newUser.setActivated(false);
+        newUser.setActivated(activate);
         // new user gets registration key
-        newUser.setActivationKey(RandomUtil.generateActivationKey());
+        if (!activate) {
+            newUser.setActivationKey(RandomUtil.generateActivationKey());
+        }
         Set<Authority> authorities = new HashSet<>();
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
@@ -326,6 +359,7 @@ public class UserService {
 
     /**
      * Gets a list of all the authorities.
+     *
      * @return a list of all the authorities.
      */
     @Transactional(readOnly = true)

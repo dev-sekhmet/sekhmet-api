@@ -7,7 +7,10 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.validation.constraints.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 /**
  * A DTO representing a user, with his authorities.
@@ -41,6 +44,8 @@ public class AdminUserDTO {
 
     private String createdBy;
 
+    private String phoneNumber;
+
     private Instant createdDate;
 
     private String lastModifiedBy;
@@ -59,6 +64,7 @@ public class AdminUserDTO {
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.email = user.getEmail();
+        this.phoneNumber = user.getPhoneNumber();
         this.activated = user.isActivated();
         this.imageUrl = user.getImageUrl();
         this.langKey = user.getLangKey();
@@ -83,6 +89,14 @@ public class AdminUserDTO {
 
     public void setLogin(String login) {
         this.login = login;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getFirstName() {

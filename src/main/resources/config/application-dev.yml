@@ -83,7 +83,7 @@ spring:
         enabled: true
 
 server:
-  port: 8080
+  port: 8082
 
 # ===================================================================
 # JHipster specific properties
@@ -136,3 +136,9 @@ application:
     region: 'eu-west-3'
     endpoint: 'http://localhost:4566'
     bucket: 'testbucket'
+  sms:
+    twilio:
+      account-sid:
+      auth-token:
+      verify-sid:
+    password-phone-number-secret:

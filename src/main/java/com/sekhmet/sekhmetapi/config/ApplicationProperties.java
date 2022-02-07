@@ -1,5 +1,7 @@
 package com.sekhmet.sekhmetapi.config;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -12,9 +14,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ApplicationProperties {
 
     private final S3Properties s3 = new S3Properties();
+    private final SmsProperties sms = new SmsProperties();
 
     public S3Properties getS3() {
         return s3;
+    }
+
+    public SmsProperties getSms() {
+        return sms;
     }
 
     public static class S3Properties {
@@ -45,6 +52,23 @@ public class ApplicationProperties {
 
         public void setEndpoint(String endpoint) {
             this.endpoint = endpoint;
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class SmsProperties {
+
+        private final TwilioPreperties twilio = new TwilioPreperties();
+        private String passwordPhoneNumberSecret;
+
+        @Getter
+        @Setter
+        public static class TwilioPreperties {
+
+            private String accountSid;
+            private String authToken;
+            private String verifySid;
         }
     }
 }

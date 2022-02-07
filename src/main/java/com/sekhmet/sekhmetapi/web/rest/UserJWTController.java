@@ -1,10 +1,19 @@
 package com.sekhmet.sekhmetapi.web.rest;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.security.jwt.JWTFilter;
 import com.sekhmet.sekhmetapi.security.jwt.TokenProvider;
+import com.sekhmet.sekhmetapi.service.SmsService;
+import com.sekhmet.sekhmetapi.service.UserService;
+import com.sekhmet.sekhmetapi.service.dto.sms.CheckPhoneVerificationRequest;
+import com.sekhmet.sekhmetapi.service.dto.sms.StartPhoneVerificationRequest;
+import com.sekhmet.sekhmetapi.service.dto.sms.VerificationStatus;
+import com.sekhmet.sekhmetapi.web.rest.errors.BadRequestAlertException;
 import com.sekhmet.sekhmetapi.web.rest.vm.LoginVM;
+import java.util.Optional;
 import javax.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,30 +28,68 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api")
+@AllArgsConstructor
 public class UserJWTController {
 
+    private static final String ENTITY_NAME = "user";
     private final TokenProvider tokenProvider;
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-
-    public UserJWTController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder) {
-        this.tokenProvider = tokenProvider;
-        this.authenticationManagerBuilder = authenticationManagerBuilder;
-    }
+    private final SmsService smsService;
+    private final UserService userService;
 
     @PostMapping("/authenticate")
     public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-            loginVM.getUsername(),
-            loginVM.getPassword()
-        );
-
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = tokenProvider.createToken(authentication, loginVM.isRememberMe());
+        String jwt = createToken(loginVM.getUsername(), loginVM.getPassword(), loginVM.isRememberMe());
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
         return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+    }
+
+    @GetMapping("/login")
+    public ResponseEntity<VerificationStatus> authenticate(StartPhoneVerificationRequest request) {
+        VerificationStatus status = smsService.sendVerificationCode(request);
+        if (status == null) {
+            throw new BadRequestAlertException("An error occur during Verification Code Send", ENTITY_NAME, "errorSendVerificationCode");
+        }
+        if (status == VerificationStatus.CANCELED) {
+            throw new BadRequestAlertException("An error occurred request canceled", ENTITY_NAME, "errorSendVerificationCodeCanceled");
+        }
+        return ResponseEntity.ok(status);
+    }
+
+    /**
+     * Login or signup via phone number
+     *
+     * @param request
+     * @return
+     */
+    @GetMapping("/verify")
+    public ResponseEntity<JWTToken> verify(CheckPhoneVerificationRequest request) {
+        VerificationStatus status = smsService.checkVerificationCode(request);
+        if (status == null) {
+            throw new BadRequestAlertException("An error occur during Verification Code Send", ENTITY_NAME, "errorSendVerificationCode");
+        }
+        if (status == VerificationStatus.CANCELED) {
+            throw new BadRequestAlertException("An error occurred request canceled", ENTITY_NAME, "errorSendVerificationCodeCanceled");
+        }
+
+        Optional<User> userOptional = userService.getUserByPhoneNumber(request.getPhoneNumber());
+        User user = userOptional.orElseGet(() -> userService.registerUserByPhoneNumber(request));
+        String phoneLogin = userService.buildPhoneLogin(request);
+        String password = userService.buildPhoneLoginPassword(phoneLogin);
+
+        String jwt = createToken(phoneLogin, password, true);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
+        return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+    }
+
+    private String createToken(String login, String password, boolean rememberMe) {
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(login, password);
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return tokenProvider.createToken(authentication, rememberMe);
     }
 
     /**
