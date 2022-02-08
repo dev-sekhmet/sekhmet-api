@@ -48,6 +48,11 @@ public class UserJWTController {
 
     @GetMapping("/login")
     public ResponseEntity<VerificationStatus> authenticate(StartPhoneVerificationRequest request) {
+        // for GOOGLE and APPLE verification
+        if (request.getPhoneNumber().startsWith("+23799999")) {
+            return ResponseEntity.ok(VerificationStatus.PENDING);
+        }
+
         VerificationStatus status = smsService.sendVerificationCode(request);
         if (status == null) {
             throw new BadRequestAlertException("An error occur during Verification Code Send", ENTITY_NAME, "errorSendVerificationCode");
@@ -66,6 +71,19 @@ public class UserJWTController {
      */
     @GetMapping("/verify")
     public ResponseEntity<JWTToken> verify(CheckPhoneVerificationRequest request) {
+        // for GOOGLE and APPLE verification
+        if (request.getPhoneNumber().startsWith("+23799999") && request.getToken().startsWith("9999")) {
+            Optional<User> userOptional = userService.getUserByPhoneNumber(request.getPhoneNumber());
+            User user = userOptional.orElseGet(() -> userService.registerUserByPhoneNumber(request));
+            String phoneLogin = userService.buildPhoneLogin(request);
+            String password = userService.buildPhoneLoginPassword(phoneLogin);
+
+            String jwt = createToken(phoneLogin, password, true);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
+            return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+        }
+
         VerificationStatus status = smsService.checkVerificationCode(request);
         if (status == null) {
             throw new BadRequestAlertException("An error occur during Verification Code Send", ENTITY_NAME, "errorCheckVerificationCode");
