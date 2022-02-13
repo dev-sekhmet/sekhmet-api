@@ -6,8 +6,10 @@ import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.domain.enumeration.ChatMemberScope;
 import com.sekhmet.sekhmetapi.domain.enumeration.ChatType;
 import com.sekhmet.sekhmetapi.repository.ChatRepository;
+import com.sekhmet.sekhmetapi.service.ChatMemberService;
 import com.sekhmet.sekhmetapi.service.ChatService;
 import com.sekhmet.sekhmetapi.service.UserService;
+import com.sekhmet.sekhmetapi.service.utils.AuthorityUtils;
 import com.sekhmet.sekhmetapi.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,6 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +38,7 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class ChatResource {
 
     private final Logger log = LoggerFactory.getLogger(ChatResource.class);
@@ -45,14 +49,9 @@ public class ChatResource {
     private String applicationName;
 
     private final ChatService chatService;
+    private final ChatMemberService chatMemberService;
     private final UserService userService;
     private final ChatRepository chatRepository;
-
-    public ChatResource(ChatService chatService, UserService userService, ChatRepository chatRepository) {
-        this.chatService = chatService;
-        this.userService = userService;
-        this.chatRepository = chatRepository;
-    }
 
     /**
      * {@code POST  /chats} : Create a new chat.
@@ -151,7 +150,13 @@ public class ChatResource {
     @GetMapping("/chats")
     public ResponseEntity<List<Chat>> getAllChats(Pageable pageable) {
         log.debug("REST request to get a page of Chats");
-        Page<Chat> page = chatService.findAll(pageable);
+        Optional<User> existingUser = userService.getUserWithAuthorities();
+        Page<Chat> page = null;
+        if (AuthorityUtils.isAdmin(existingUser.get())) {
+            page = chatService.findAll(pageable);
+        } else {
+            page = chatService.findAllWithUserMember(pageable, existingUser.get().getId());
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -185,8 +190,8 @@ public class ChatResource {
                 Chat newChat = new Chat();
                 User secondUser = userService.getUserById(id).get();
                 newChat.setChatType(ChatType.TWO_USER);
-                newChat.addMembers(new ChatMember().scope(ChatMemberScope.PARTICIPANT).user(user));
-                newChat.addMembers(new ChatMember().scope(ChatMemberScope.PARTICIPANT).user(secondUser));
+                chatMemberService.save(new ChatMember().scope(ChatMemberScope.PARTICIPANT).user(user));
+                chatMemberService.save(new ChatMember().scope(ChatMemberScope.PARTICIPANT).user(secondUser));
                 newChat = chatService.save(newChat);
                 return Optional.of(newChat);
             });
@@ -220,7 +225,13 @@ public class ChatResource {
     @GetMapping("/_search/chats")
     public ResponseEntity<List<Chat>> searchChats(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of Chats for query {}", query);
-        Page<Chat> page = chatService.search(query, pageable);
+        Optional<User> existingUser = userService.getUserWithAuthorities();
+        Page<Chat> page = null;
+        if (AuthorityUtils.isAdmin(existingUser.get())) {
+            page = chatService.search(query, pageable);
+        } else {
+            page = chatService.search(query, pageable, existingUser.get().getId());
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

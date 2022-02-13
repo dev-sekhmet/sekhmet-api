@@ -1,7 +1,5 @@
 package com.sekhmet.sekhmetapi.service;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
 import com.sekhmet.sekhmetapi.domain.ChatMember;
 import com.sekhmet.sekhmetapi.repository.ChatMemberRepository;
 import com.sekhmet.sekhmetapi.repository.search.ChatMemberSearchRepository;
@@ -84,6 +82,18 @@ public class ChatMemberService {
     }
 
     /**
+     * Get all the ChatMemberS by chat
+     *
+     * @param pageable the pagination information.
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public Page<ChatMember> findAll(UUID chatId, Pageable pageable) {
+        log.debug("Request to get all Messages by chat");
+        return chatMemberRepository.findAllByChat(chatId, pageable);
+    }
+
+    /**
      * Get one chatMember by id.
      *
      * @param id the id of the entity.
@@ -109,7 +119,7 @@ public class ChatMemberService {
     /**
      * Search for the chatMember corresponding to the query.
      *
-     * @param query the query of the search.
+     * @param query    the query of the search.
      * @param pageable the pagination information.
      * @return the list of entities.
      */

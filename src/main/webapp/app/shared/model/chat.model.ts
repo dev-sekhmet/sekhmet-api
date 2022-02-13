@@ -7,6 +7,10 @@ export interface IChat {
   name?: string | null;
   members?: IChatMember[] | null;
   messsages?: IMessage[] | null;
+  createdBy?: string;
+  createdDate?: Date | null;
+  lastModifiedBy?: string;
+  lastModifiedDate?: Date | null;
 }
 
 export const defaultValue: Readonly<IChat> = {

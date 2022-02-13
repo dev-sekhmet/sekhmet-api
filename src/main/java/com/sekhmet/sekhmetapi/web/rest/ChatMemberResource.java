@@ -1,7 +1,5 @@
 package com.sekhmet.sekhmetapi.web.rest;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
 import com.sekhmet.sekhmetapi.domain.ChatMember;
 import com.sekhmet.sekhmetapi.repository.ChatMemberRepository;
 import com.sekhmet.sekhmetapi.service.ChatMemberService;
@@ -12,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -21,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -70,6 +66,20 @@ public class ChatMemberResource {
             .created(new URI("/api/chat-members/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
+    }
+
+    /**
+     * {@code GET  /messages} : get all the chat-members by chat
+     *
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of messages in body.
+     */
+    @GetMapping("/chat-members/chat/{chatId}")
+    public ResponseEntity<List<ChatMember>> getAllByChat(@PathVariable("chatId") UUID chatId, Pageable pageable) {
+        log.debug("REST request to get a page of ChatMember");
+        Page<ChatMember> page = chatMemberService.findAll(chatId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**

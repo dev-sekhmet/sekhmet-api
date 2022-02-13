@@ -3,6 +3,8 @@ package com.sekhmet.sekhmetapi.repository;
 import com.sekhmet.sekhmetapi.domain.Chat;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,4 +31,14 @@ public interface ChatRepository extends JpaRepository<Chat, UUID> {
         nativeQuery = true
     )
     Optional<Chat> findChatByMembers(@Param("user1") UUID user1, @Param("user2") UUID user2);
+
+    @Query(
+        value = "SELECT c.*\n" +
+        "FROM Chat c\n" +
+        "         INNER JOIN chat_member cm ON cm.chat_id = c.id\n" +
+        "         INNER JOIN skh_user u ON u.id = cm.user_id\n" +
+        "WHERE u.id = :user",
+        nativeQuery = true
+    )
+    Page<Chat> findAllWithUserMember(@Param("user") UUID user, Pageable pageable);
 }

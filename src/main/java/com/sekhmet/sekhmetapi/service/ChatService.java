@@ -39,7 +39,7 @@ public class ChatService {
     public Chat save(Chat chat) {
         log.debug("Request to save Chat : {}", chat);
         Chat result = chatRepository.save(chat);
-        //chatSearchRepository.save(result);
+        chatSearchRepository.save(result);
         return result;
     }
 
@@ -109,6 +109,11 @@ public class ChatService {
         return chatRepository.findChatByMembers(user1, user2);
     }
 
+    public Page<Chat> findAllWithUserMember(Pageable pageable, UUID uuid) {
+        log.debug("Request to get All Chat : user {}", uuid);
+        return chatRepository.findAllWithUserMember(uuid, pageable);
+    }
+
     /**
      * Delete the chat by id.
      *
@@ -130,6 +135,19 @@ public class ChatService {
     @Transactional(readOnly = true)
     public Page<Chat> search(String query, Pageable pageable) {
         log.debug("Request to search for a page of Chats for query {}", query);
+        return chatSearchRepository.search(query, pageable);
+    }
+
+    /**
+     * Search for the chat corresponding to the query.
+     *
+     * @param query    the query of the search.
+     * @param pageable the pagination information.
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public Page<Chat> search(String query, Pageable pageable, UUID id) {
+        log.debug("Request to search for a page of Chats for query {} and user {} ", query, id);
         return chatSearchRepository.search(query, pageable);
     }
 }

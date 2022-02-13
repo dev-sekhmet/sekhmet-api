@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { Button, Input, InputGroup, FormGroup, Form, Row, Col, Table } from 'reactstrap';
-import { Translate, translate, getSortState, JhiPagination, JhiItemCount } from 'react-jhipster';
+import { Button, Col, Form, FormGroup, Input, InputGroup, Row, Table } from 'reactstrap';
+import { getSortState, JhiItemCount, JhiPagination, TextFormat, Translate, translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { searchEntities, getEntities } from './chat.reducer';
-import { IChat } from 'app/shared/model/chat.model';
-import { APP_DATE_FORMAT, APP_LOCAL_DATE_FORMAT } from 'app/config/constants';
+import { getEntities, searchEntities } from './chat.reducer';
+import { APP_DATE_FORMAT } from 'app/config/constants';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
@@ -174,6 +173,19 @@ export const Chat = (props: RouteComponentProps<{ url: string }>) => {
                   <Translate contentKey="sekhmetApiApp.chat.name">Name</Translate> <FontAwesomeIcon icon="sort" />
                 </th>
                 <th />
+                <th className="hand" onClick={sort('createdDate')}>
+                  <Translate contentKey="userManagement.createdDate">Created Date</Translate>
+                  <FontAwesomeIcon icon="sort" />
+                </th>
+                <th className="hand" onClick={sort('lastModifiedBy')}>
+                  <Translate contentKey="userManagement.lastModifiedBy">Last Modified By</Translate>
+                  <FontAwesomeIcon icon="sort" />
+                </th>
+                <th id="modified-date-sort" className="hand" onClick={sort('lastModifiedDate')}>
+                  <Translate contentKey="userManagement.lastModifiedDate">Last Modified Date</Translate>
+                  <FontAwesomeIcon icon="sort" />
+                </th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -186,6 +198,15 @@ export const Chat = (props: RouteComponentProps<{ url: string }>) => {
                   </td>
                   <td>{chat.icon}</td>
                   <td>{chat.name}</td>
+                  <td>
+                    {chat.createdDate ? <TextFormat value={chat.createdDate} type="date" format={APP_DATE_FORMAT} blankOnInvalid /> : null}
+                  </td>
+                  <td>{chat.lastModifiedBy}</td>
+                  <td>
+                    {chat.lastModifiedDate ? (
+                      <TextFormat value={chat.lastModifiedDate} type="date" format={APP_DATE_FORMAT} blankOnInvalid />
+                    ) : null}
+                  </td>
                   <td className="text-end">
                     <div className="btn-group flex-btn-group-container">
                       <Button tag={Link} to={`${match.url}/${chat.id}`} color="info" size="sm" data-cy="entityDetailsButton">
