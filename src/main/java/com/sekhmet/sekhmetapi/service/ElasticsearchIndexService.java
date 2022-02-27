@@ -1,17 +1,8 @@
 package com.sekhmet.sekhmetapi.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.sekhmet.sekhmetapi.domain.Chat;
-import com.sekhmet.sekhmetapi.domain.ChatMember;
-import com.sekhmet.sekhmetapi.domain.Message;
 import com.sekhmet.sekhmetapi.domain.User;
-import com.sekhmet.sekhmetapi.repository.ChatMemberRepository;
-import com.sekhmet.sekhmetapi.repository.ChatRepository;
-import com.sekhmet.sekhmetapi.repository.MessageRepository;
 import com.sekhmet.sekhmetapi.repository.UserRepository;
-import com.sekhmet.sekhmetapi.repository.search.ChatMemberSearchRepository;
-import com.sekhmet.sekhmetapi.repository.search.ChatSearchRepository;
-import com.sekhmet.sekhmetapi.repository.search.MessageSearchRepository;
 import com.sekhmet.sekhmetapi.repository.search.UserSearchRepository;
 import io.micrometer.core.annotation.Timed;
 import java.beans.IntrospectionException;
@@ -48,18 +39,6 @@ public class ElasticsearchIndexService {
 
     private final Logger log = LoggerFactory.getLogger(ElasticsearchIndexService.class);
 
-    private final ChatRepository chatRepository;
-
-    private final ChatSearchRepository chatSearchRepository;
-
-    private final ChatMemberRepository chatMemberRepository;
-
-    private final ChatMemberSearchRepository chatMemberSearchRepository;
-
-    private final MessageRepository messageRepository;
-
-    private final MessageSearchRepository messageSearchRepository;
-
     private final UserRepository userRepository;
 
     private final UserSearchRepository userSearchRepository;
@@ -69,22 +48,10 @@ public class ElasticsearchIndexService {
     public ElasticsearchIndexService(
         UserRepository userRepository,
         UserSearchRepository userSearchRepository,
-        ChatRepository chatRepository,
-        ChatSearchRepository chatSearchRepository,
-        ChatMemberRepository chatMemberRepository,
-        ChatMemberSearchRepository chatMemberSearchRepository,
-        MessageRepository messageRepository,
-        MessageSearchRepository messageSearchRepository,
         ElasticsearchRestTemplate elasticsearchTemplate
     ) {
         this.userRepository = userRepository;
         this.userSearchRepository = userSearchRepository;
-        this.chatRepository = chatRepository;
-        this.chatSearchRepository = chatSearchRepository;
-        this.chatMemberRepository = chatMemberRepository;
-        this.chatMemberSearchRepository = chatMemberSearchRepository;
-        this.messageRepository = messageRepository;
-        this.messageSearchRepository = messageSearchRepository;
         this.elasticsearchTemplate = elasticsearchTemplate;
     }
 
@@ -93,9 +60,6 @@ public class ElasticsearchIndexService {
     public void reindexAll() {
         if (reindexLock.tryLock()) {
             try {
-                reindexForClass(Chat.class, chatRepository, chatSearchRepository);
-                reindexForClass(ChatMember.class, chatMemberRepository, chatMemberSearchRepository);
-                reindexForClass(Message.class, messageRepository, messageSearchRepository);
                 reindexForClass(User.class, userRepository, userSearchRepository);
 
                 log.info("Elasticsearch: Successfully performed reindexing");

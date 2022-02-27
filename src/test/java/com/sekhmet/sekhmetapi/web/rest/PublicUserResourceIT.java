@@ -10,11 +10,13 @@ import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.repository.UserRepository;
 import com.sekhmet.sekhmetapi.repository.search.UserSearchRepository;
 import com.sekhmet.sekhmetapi.security.AuthoritiesConstants;
+import com.sekhmet.sekhmetapi.service.TwilioService;
 import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -51,6 +53,9 @@ class PublicUserResourceIT {
     @Autowired
     private MockMvc restUserMockMvc;
 
+    @MockBean
+    private TwilioService twilioService;
+
     private User user;
 
     @BeforeEach
@@ -75,10 +80,7 @@ class PublicUserResourceIT {
             .perform(get("/api/users?sort=id,desc").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN)))
-            .andExpect(jsonPath("$.[*].email").doesNotExist())
-            .andExpect(jsonPath("$.[*].imageUrl").doesNotExist())
-            .andExpect(jsonPath("$.[*].langKey").doesNotExist());
+            .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN)));
     }
 
     @Test

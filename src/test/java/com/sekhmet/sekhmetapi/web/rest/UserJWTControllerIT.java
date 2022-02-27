@@ -1,21 +1,18 @@
 package com.sekhmet.sekhmetapi.web.rest;
 
-import static org.hamcrest.Matchers.emptyString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.sekhmet.sekhmetapi.IntegrationTest;
 import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.repository.UserRepository;
+import com.sekhmet.sekhmetapi.service.TwilioService;
 import com.sekhmet.sekhmetapi.web.rest.vm.LoginVM;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,6 +33,9 @@ class UserJWTControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private TwilioService twilioService;
 
     @Test
     @Transactional

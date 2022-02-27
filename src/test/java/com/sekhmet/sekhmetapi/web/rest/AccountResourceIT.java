@@ -2,7 +2,8 @@ package com.sekhmet.sekhmetapi.web.rest;
 
 import static com.sekhmet.sekhmetapi.web.rest.AccountResourceIT.TEST_USER_LOGIN;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.sekhmet.sekhmetapi.IntegrationTest;
@@ -11,18 +12,22 @@ import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.repository.AuthorityRepository;
 import com.sekhmet.sekhmetapi.repository.UserRepository;
 import com.sekhmet.sekhmetapi.security.AuthoritiesConstants;
+import com.sekhmet.sekhmetapi.service.TwilioService;
 import com.sekhmet.sekhmetapi.service.UserService;
 import com.sekhmet.sekhmetapi.service.dto.AdminUserDTO;
 import com.sekhmet.sekhmetapi.service.dto.PasswordChangeDTO;
-import com.sekhmet.sekhmetapi.service.dto.UserDTO;
 import com.sekhmet.sekhmetapi.web.rest.vm.KeyAndPasswordVM;
 import com.sekhmet.sekhmetapi.web.rest.vm.ManagedUserVM;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -53,6 +58,9 @@ class AccountResourceIT {
 
     @Autowired
     private MockMvc restAccountMockMvc;
+
+    @MockBean
+    private TwilioService twilioService;
 
     @Test
     @WithUnauthenticatedMockUser

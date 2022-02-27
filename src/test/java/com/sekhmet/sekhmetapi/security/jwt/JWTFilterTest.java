@@ -4,12 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sekhmet.sekhmetapi.management.SecurityMetersService;
 import com.sekhmet.sekhmetapi.security.AuthoritiesConstants;
+import com.sekhmet.sekhmetapi.service.TwilioService;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -25,6 +27,9 @@ class JWTFilterTest {
     private TokenProvider tokenProvider;
 
     private JWTFilter jwtFilter;
+
+    @MockBean
+    private TwilioService twilioService;
 
     @BeforeEach
     public void setup() {

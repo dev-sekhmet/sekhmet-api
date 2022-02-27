@@ -6,11 +6,13 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import com.sekhmet.sekhmetapi.IntegrationTest;
 import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.repository.UserRepository;
+import com.sekhmet.sekhmetapi.service.TwilioService;
 import java.util.Locale;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,9 @@ class DomainUserDetailsServiceIT {
 
     @Autowired
     private UserDetailsService domainUserDetailsService;
+
+    @MockBean
+    private TwilioService twilioService;
 
     @BeforeEach
     public void init() {

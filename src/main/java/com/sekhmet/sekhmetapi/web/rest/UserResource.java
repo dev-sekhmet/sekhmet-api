@@ -1,12 +1,10 @@
 package com.sekhmet.sekhmetapi.web.rest;
 
 import com.sekhmet.sekhmetapi.config.Constants;
-import com.sekhmet.sekhmetapi.domain.Message;
 import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.repository.UserRepository;
 import com.sekhmet.sekhmetapi.security.AuthoritiesConstants;
 import com.sekhmet.sekhmetapi.service.MailService;
-import com.sekhmet.sekhmetapi.service.MessageService;
 import com.sekhmet.sekhmetapi.service.UserService;
 import com.sekhmet.sekhmetapi.service.dto.AdminUserDTO;
 import com.sekhmet.sekhmetapi.web.rest.errors.BadRequestAlertException;
@@ -87,13 +85,11 @@ public class UserResource {
     private final UserRepository userRepository;
 
     private final MailService mailService;
-    private final MessageService messageService;
 
-    public UserResource(UserService userService, UserRepository userRepository, MailService mailService, MessageService messageService) {
+    public UserResource(UserService userService, UserRepository userRepository, MailService mailService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.mailService = mailService;
-        this.messageService = messageService;
     }
 
     /**
@@ -193,25 +189,6 @@ public class UserResource {
         log.debug("REST request to get User : {}", login);
         Optional<User> user = userService.getUserWithAuthoritiesByLogin(login).or(() -> userService.getUserById(UUID.fromString(login)));
         return ResponseUtil.wrapOrNotFound(user.map(AdminUserDTO::new));
-    }
-
-    /**
-     * {@code GET /admin/users/:login} : get the "login" user.
-     *
-     * @param login the login of the user to find.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "login" user, or with status {@code 404 (Not Found)}.
-     */
-    @GetMapping("/users/{login}/messages")
-    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<List<Message>> getMessages(
-        @PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login,
-        Pageable pageable
-    ) {
-        log.debug("REST request to get User : {}", login);
-        final User user = userService.getUserWithAuthorities().get();
-        // final Page<Message> page = messageService.getMessages(login, user.getLogin(), pageable);
-        //  HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return new ResponseEntity<>(new ArrayList<>(), new HttpHeaders(), HttpStatus.OK);
     }
 
     /**

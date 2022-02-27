@@ -1,6 +1,7 @@
 package com.sekhmet.sekhmetapi.service;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -28,6 +29,7 @@ import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.MessageSource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -53,6 +55,9 @@ class MailServiceIT {
 
     @Autowired
     private MessageSource messageSource;
+
+    @MockBean
+    private TwilioService twilioService;
 
     @Autowired
     private SpringTemplateEngine templateEngine;
