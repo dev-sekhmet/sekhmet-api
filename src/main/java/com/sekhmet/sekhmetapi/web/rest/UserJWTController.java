@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.security.jwt.JWTFilter;
 import com.sekhmet.sekhmetapi.security.jwt.TokenProvider;
-import com.sekhmet.sekhmetapi.service.SmsService;
+import com.sekhmet.sekhmetapi.service.ConversationService;
+import com.sekhmet.sekhmetapi.service.TwilioService;
 import com.sekhmet.sekhmetapi.service.UserService;
 import com.sekhmet.sekhmetapi.service.dto.sms.CheckPhoneVerificationRequest;
 import com.sekhmet.sekhmetapi.service.dto.sms.StartPhoneVerificationRequest;
@@ -35,7 +36,8 @@ public class UserJWTController {
     private final TokenProvider tokenProvider;
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final SmsService smsService;
+    private final TwilioService smsService;
+    private final ConversationService conversationService;
     private final UserService userService;
 
     @PostMapping("/authenticate")
@@ -73,15 +75,7 @@ public class UserJWTController {
     public ResponseEntity<JWTToken> verify(CheckPhoneVerificationRequest request) {
         // for GOOGLE and APPLE verification
         if (request.getPhoneNumber().startsWith("+23799999") && request.getToken().startsWith("9999")) {
-            Optional<User> userOptional = userService.getUserByPhoneNumber(request.getPhoneNumber());
-            User user = userOptional.orElseGet(() -> userService.registerUserByPhoneNumber(request));
-            String phoneLogin = userService.buildPhoneLogin(request);
-            String password = userService.buildPhoneLoginPassword(phoneLogin);
-
-            String jwt = createToken(phoneLogin, password, true);
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-            return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+            return getJwtTokenResponseEntity(request);
         }
 
         VerificationStatus status = smsService.checkVerificationCode(request);
@@ -99,6 +93,10 @@ public class UserJWTController {
             );
         }
 
+        return getJwtTokenResponseEntity(request);
+    }
+
+    private ResponseEntity<JWTToken> getJwtTokenResponseEntity(CheckPhoneVerificationRequest request) {
         Optional<User> userOptional = userService.getUserByPhoneNumber(request.getPhoneNumber());
         User user = userOptional.orElseGet(() -> userService.registerUserByPhoneNumber(request));
         String phoneLogin = userService.buildPhoneLogin(request);
@@ -106,8 +104,10 @@ public class UserJWTController {
 
         String jwt = createToken(phoneLogin, password, true);
         HttpHeaders httpHeaders = new HttpHeaders();
+        String twilioToken = conversationService.generateAccessToken(user.getId());
         httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-        return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+        httpHeaders.add(JWTFilter.TWILIO_AUTHORIZATION_HEADER, twilioToken);
+        return new ResponseEntity<>(new JWTToken(jwt, twilioToken), httpHeaders, HttpStatus.OK);
     }
 
     private String createToken(String login, String password, boolean rememberMe) {
@@ -123,14 +123,29 @@ public class UserJWTController {
     static class JWTToken {
 
         private String idToken;
+        private String twilioToken;
 
         JWTToken(String idToken) {
             this.idToken = idToken;
         }
 
+        JWTToken(String idToken, String twilioToken) {
+            this.idToken = idToken;
+            this.twilioToken = twilioToken;
+        }
+
         @JsonProperty("id_token")
         String getIdToken() {
             return idToken;
+        }
+
+        @JsonProperty("twilio_token")
+        String getTwilioToken() {
+            return twilioToken;
+        }
+
+        void setTwilioToken(String twilioToken) {
+            this.twilioToken = twilioToken;
         }
 
         void setIdToken(String idToken) {

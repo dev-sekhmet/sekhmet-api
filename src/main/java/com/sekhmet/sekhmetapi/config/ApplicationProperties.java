@@ -69,6 +69,9 @@ public class ApplicationProperties {
             private String accountSid;
             private String authToken;
             private String verifySid;
+            private String apiSecret;
+            private String apiSid;
+            private String conversationSid;
         }
     }
 }

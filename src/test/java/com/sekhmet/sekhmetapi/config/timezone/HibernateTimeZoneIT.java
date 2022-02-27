@@ -6,12 +6,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.sekhmet.sekhmetapi.IntegrationTest;
 import com.sekhmet.sekhmetapi.repository.timezone.DateTimeWrapper;
 import com.sekhmet.sekhmetapi.repository.timezone.DateTimeWrapperRepository;
+import com.sekhmet.sekhmetapi.service.TwilioService;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,9 @@ class HibernateTimeZoneIT {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @MockBean
+    private TwilioService twilioService;
 
     @Value("${spring.jpa.properties.hibernate.jdbc.time_zone:UTC}")
     private String zoneId;

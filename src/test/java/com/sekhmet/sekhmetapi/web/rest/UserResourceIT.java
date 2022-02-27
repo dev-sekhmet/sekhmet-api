@@ -11,6 +11,7 @@ import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.repository.UserRepository;
 import com.sekhmet.sekhmetapi.repository.search.UserSearchRepository;
 import com.sekhmet.sekhmetapi.security.AuthoritiesConstants;
+import com.sekhmet.sekhmetapi.service.TwilioService;
 import com.sekhmet.sekhmetapi.service.dto.AdminUserDTO;
 import com.sekhmet.sekhmetapi.service.mapper.UserMapper;
 import com.sekhmet.sekhmetapi.web.rest.vm.ManagedUserVM;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -62,6 +64,9 @@ class UserResourceIT {
 
     @Autowired
     private UserRepository userRepository;
+
+    @MockBean
+    private TwilioService twilioService;
 
     /**
      * This repository is mocked in the com.sekhmet.sekhmetapi.repository.search test package.

@@ -1,17 +1,12 @@
 package com.sekhmet.sekhmetapi.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.sekhmet.sekhmetapi.IntegrationTest;
-import com.sekhmet.sekhmetapi.config.Constants;
 import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.repository.UserRepository;
 import com.sekhmet.sekhmetapi.repository.search.UserSearchRepository;
-import com.sekhmet.sekhmetapi.service.dto.AdminUserDTO;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -24,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.auditing.DateTimeProvider;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.security.RandomUtil;
 
@@ -53,6 +46,9 @@ class UserServiceIT {
 
     @Autowired
     private UserService userService;
+
+    @MockBean
+    private TwilioService twilioService;
 
     /**
      * This repository is mocked in the com.sekhmet.sekhmetapi.repository.search test package.
