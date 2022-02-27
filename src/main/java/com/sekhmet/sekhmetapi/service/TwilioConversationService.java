@@ -70,39 +70,46 @@ public class TwilioConversationService {
             return Optional.of(conversation);
         } catch (ApiException ex) {
             if (ex.getMessage().contains("not found")) {
-                Optional<com.sekhmet.sekhmetapi.domain.User> userOptional = userService.getUserById(userId);
-                Optional<com.sekhmet.sekhmetapi.domain.User> currentUserOptional = userService.getUserWithAuthorities();
-
-                if (userOptional.isPresent() && currentUserOptional.isPresent()) {
-                    com.sekhmet.sekhmetapi.domain.User user = userOptional.get();
-                    com.sekhmet.sekhmetapi.domain.User currentUser = currentUserOptional.get();
-                    Map<String, String> conversationNames = buildConversationNames(user, currentUser);
-                    try {
-                        conversation =
-                            Conversation
-                                .creator()
-                                .setUniqueName(pathSid)
-                                .setAttributes(new ObjectMapper().writeValueAsString(conversationNames))
-                                .setFriendlyName(user.getFirstName() + "/" + currentUser.getFirstName())
-                                .create();
-                    } catch (JsonProcessingException e) {
-                        log.info("Could not parse twilio attributs");
-                    }
-
-                    Participant.creator(conversation.getSid()).setIdentity(userId.toString()).create();
-
-                    Participant.creator(conversation.getSid()).setIdentity(currentUserId.toString()).create();
-                    log.info(
-                        "twilio Conversation created Successfully: {} - {}",
-                        conversation.getUniqueName(),
-                        conversation.getFriendlyName()
-                    );
-                }
+                conversation = createConversationOneToOne(userId, currentUserId, pathSid, conversation);
                 return Optional.of(conversation);
             } else {
                 throw ex;
             }
         }
+    }
+
+    private Conversation createConversationOneToOne(UUID userId, UUID currentUserId, String pathSid, Conversation conversation) {
+        Optional<com.sekhmet.sekhmetapi.domain.User> userOptional = userService.getUserById(userId);
+        Optional<com.sekhmet.sekhmetapi.domain.User> currentUserOptional = userService.getUserWithAuthorities();
+
+        if (userOptional.isPresent() && currentUserOptional.isPresent()) {
+            com.sekhmet.sekhmetapi.domain.User user = userOptional.get();
+            com.sekhmet.sekhmetapi.domain.User currentUser = currentUserOptional.get();
+            Map<String, String> conversationNames = buildConversationNames(user, currentUser);
+            try {
+                conversation =
+                    Conversation
+                        .creator()
+                        .setUniqueName(pathSid)
+                        .setAttributes(new ObjectMapper().writeValueAsString(conversationNames))
+                        .setFriendlyName(user.getFirstName() + "/" + currentUser.getFirstName())
+                        .create();
+            } catch (JsonProcessingException e) {
+                log.info("Could not parse twilio attributs");
+            }
+
+            if (conversation != null) {
+                // create first User
+                Participant.creator(conversation.getSid()).setIdentity(userId.toString()).create();
+
+                // create second User
+                Participant.creator(conversation.getSid()).setIdentity(currentUserId.toString()).create();
+            } else {
+                log.warn("Could not create conversation");
+            }
+            log.info("twilio Conversation created Successfully: {} - {}", conversation.getUniqueName(), conversation.getFriendlyName());
+        }
+        return conversation;
     }
 
     private Map<String, String> buildConversationNames(
