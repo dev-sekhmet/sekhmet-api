@@ -149,4 +149,7 @@ application:
       account-sid:
       auth-token:
       verify-sid:
+      api-secret:
+      api-sid:
+      conversation-sid:
     password-phone-number-secret:
