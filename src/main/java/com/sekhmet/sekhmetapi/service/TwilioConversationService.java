@@ -62,26 +62,38 @@ public class TwilioConversationService {
     }
 
     public Optional<Conversation> findOrCreateConversationDual(UUID userId, UUID currentUserId) {
-        String pathSid = buildDualConversationId(userId, currentUserId);
+        Optional<Conversation> conversation = findConversationDual(userId, currentUserId);
+        if (conversation.isEmpty()) {
+            conversation = findConversationDual(currentUserId, userId);
+            if (conversation.isEmpty()) {
+                String pathSid = buildDualConversationId(userId, currentUserId);
+                return Optional.of(createConversationDual(userId, currentUserId, pathSid));
+            }
+            return conversation;
+        }
+        return conversation;
+    }
+
+    public Optional<Conversation> findConversationDual(UUID userId, UUID currentUserId) {
         Conversation conversation = null;
+        String pathSid = buildDualConversationId(userId, currentUserId);
         try {
             conversation = Conversation.fetcher(pathSid).fetch();
             log.info("Twilio Conversation {} - {} Already exists", conversation.getUniqueName(), conversation.getFriendlyName());
             return Optional.of(conversation);
         } catch (ApiException ex) {
             if (ex.getMessage().contains("not found")) {
-                conversation = createConversationOneToOne(userId, currentUserId, pathSid, conversation);
-                return Optional.of(conversation);
+                return Optional.empty();
             } else {
                 throw ex;
             }
         }
     }
 
-    private Conversation createConversationOneToOne(UUID userId, UUID currentUserId, String pathSid, Conversation conversation) {
+    private Conversation createConversationDual(UUID userId, UUID currentUserId, String pathSid) {
         Optional<com.sekhmet.sekhmetapi.domain.User> userOptional = userService.getUserById(userId);
         Optional<com.sekhmet.sekhmetapi.domain.User> currentUserOptional = userService.getUserWithAuthorities();
-
+        Conversation conversation = null;
         if (userOptional.isPresent() && currentUserOptional.isPresent()) {
             com.sekhmet.sekhmetapi.domain.User user = userOptional.get();
             com.sekhmet.sekhmetapi.domain.User currentUser = currentUserOptional.get();
