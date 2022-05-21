@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.security.jwt.JWTFilter;
 import com.sekhmet.sekhmetapi.security.jwt.TokenProvider;
-import com.sekhmet.sekhmetapi.service.ConversationService;
+import com.sekhmet.sekhmetapi.service.TwilioConversationService;
 import com.sekhmet.sekhmetapi.service.TwilioService;
 import com.sekhmet.sekhmetapi.service.UserService;
 import com.sekhmet.sekhmetapi.service.dto.sms.CheckPhoneVerificationRequest;
@@ -39,7 +39,7 @@ public class UserJWTController {
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final TwilioService smsService;
-    private final ConversationService conversationService;
+    private final TwilioConversationService conversationService;
     private final UserService userService;
 
     @PostMapping("/authenticate")

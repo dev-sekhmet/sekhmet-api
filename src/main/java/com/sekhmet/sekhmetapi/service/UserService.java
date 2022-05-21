@@ -1,5 +1,6 @@
 package com.sekhmet.sekhmetapi.service;
 
+import com.amazonaws.services.s3.model.S3Object;
 import com.sekhmet.sekhmetapi.config.ApplicationProperties;
 import com.sekhmet.sekhmetapi.config.Constants;
 import com.sekhmet.sekhmetapi.domain.Authority;
@@ -25,6 +26,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import tech.jhipster.security.RandomUtil;
 
 /**
@@ -36,6 +38,9 @@ public class UserService {
 
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
+    public static final String ACCOUNT_USER_PROFIL_PICTURE = "account/user-profil-picture";
+    public static final String KEY_FORMAT = ACCOUNT_USER_PROFIL_PICTURE + "/%s";
+
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
@@ -43,7 +48,7 @@ public class UserService {
     private final UserSearchRepository userSearchRepository;
 
     private final AuthorityRepository authorityRepository;
-
+    private final S3Service s3Service;
     private final CacheManager cacheManager;
     private final String password;
 
@@ -53,13 +58,15 @@ public class UserService {
         UserSearchRepository userSearchRepository,
         AuthorityRepository authorityRepository,
         CacheManager cacheManager,
-        ApplicationProperties applicationProperties
+        ApplicationProperties applicationProperties,
+        S3Service s3Service
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userSearchRepository = userSearchRepository;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
+        this.s3Service = s3Service;
         password = applicationProperties.getSms().getPasswordPhoneNumberSecret();
     }
 
@@ -375,5 +382,24 @@ public class UserService {
 
     public List<User> findAll() {
         return userRepository.findAll();
+    }
+
+    public Optional<User> addProfilePicture(String userLogin, MultipartFile file) {
+        Optional<User> user = userRepository.findOneByLogin(userLogin);
+        return user.map(u -> {
+            String key = buildKey(u);
+            S3Service.PutResult putResult = s3Service.putMedia(key, file);
+            u.setImageUrl(putResult.getKey());
+            return userRepository.save(u);
+        });
+    }
+
+    private String buildKey(User u) {
+        return String.format(KEY_FORMAT, u.getId().toString());
+    }
+
+    public S3Object getProfiPic(String fileId) {
+        String key = String.format(KEY_FORMAT, fileId);
+        return s3Service.getMedia(key);
     }
 }

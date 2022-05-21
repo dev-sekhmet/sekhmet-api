@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sekhmet.sekhmetapi.config.ApplicationProperties;
 import com.twilio.exception.ApiException;
+import com.twilio.jwt.accesstoken.AccessToken;
+import com.twilio.jwt.accesstoken.ChatGrant;
 import com.twilio.rest.conversations.v1.Conversation;
 import com.twilio.rest.conversations.v1.User;
 import com.twilio.rest.conversations.v1.conversation.Participant;
@@ -25,6 +27,19 @@ public class TwilioConversationService {
     public TwilioConversationService(UserService userService, ApplicationProperties applicationProperties) {
         this.smsProps = applicationProperties.getSms().getTwilio();
         this.userService = userService;
+    }
+
+    public String generateAccessToken(UUID userId) {
+        ChatGrant grant = new ChatGrant();
+        grant.setServiceSid(smsProps.getConversationSid());
+
+        AccessToken token = new AccessToken.Builder(smsProps.getAccountSid(), smsProps.getApiSid(), smsProps.getApiSecret())
+            .identity(userId.toString())
+            .grant(grant)
+            //.ttl(30)
+            .ttl(86400) // 24 hours
+            .build();
+        return token.toJwt();
     }
 
     public void createAllUsers() {
@@ -134,7 +149,7 @@ public class TwilioConversationService {
         return convNames;
     }
 
-    public String buildDualConversationId(UUID id, UUID currentUser) {
+    private String buildDualConversationId(UUID id, UUID currentUser) {
         return String.format(DUAL_CONVERSATION_FORMAT_ID, id.toString(), currentUser.toString());
     }
 }

@@ -1,12 +1,8 @@
 package com.sekhmet.sekhmetapi.service;
 
-import static com.sekhmet.sekhmetapi.service.utils.FileUtils.*;
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
-import com.sekhmet.sekhmetapi.service.utils.FileUtils;
 import java.io.InputStream;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +24,7 @@ public class S3Service {
         this.amazonS3 = amazonS3;
     }
 
-    public PutResult putMedia(String chatId, MultipartFile file) {
+    public PutResult putMedia(String key, MultipartFile file) {
         try {
             InputStream content = file.getInputStream();
             ObjectMetadata meta = new ObjectMetadata();
@@ -40,18 +36,16 @@ public class S3Service {
             } else {
                 mediaType = (MediaType.parseMediaTypes(file.getContentType()).get(0));
             }
-            String fileType = FileUtils.getFileType(mediaType.toString());
-
             meta.setContentLength(content.available());
             meta.setContentType(mediaType.toString());
-            String key = buildKey(chatId, fileType, file);
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, content, meta);
+            String completeKey = key + "." + mediaType.getSubtype();
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, completeKey, content, meta);
 
             putObjectRequest = putObjectRequest.withCannedAcl(CannedAccessControlList.AuthenticatedRead);
 
             PutObjectResult result = amazonS3.putObject(putObjectRequest);
             if (result != null) {
-                return new PutResult().key(key).fileType(mediaType.toString());
+                return new PutResult().key(completeKey).fileType(mediaType.toString());
             }
         } catch (Exception e) {
             log.error("Error uploading file on S3: ", e);
@@ -60,19 +54,7 @@ public class S3Service {
         return null;
     }
 
-    private String buildKey(String chatId, String fileType, MultipartFile file) {
-        String name = file.getOriginalFilename();
-        assert name != null;
-        String fileId = UUID.randomUUID() + HIPHEN + name.replace(" ", UNDERSCORE);
-        return buildKey(chatId, fileType, fileId);
-    }
-
-    private String buildKey(String chatId, String fileType, String fileId) {
-        return String.format(KEY_FORMAT, chatId, fileType, fileId);
-    }
-
-    public S3Object getMedia(String chatId, String fileType, String fileId) {
-        String key = buildKey(chatId, fileType, fileId);
+    public S3Object getMedia(String key) {
         return amazonS3.getObject(bucket, key);
     }
 

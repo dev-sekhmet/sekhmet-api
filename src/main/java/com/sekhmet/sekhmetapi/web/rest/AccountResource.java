@@ -1,5 +1,8 @@
 package com.sekhmet.sekhmetapi.web.rest;
 
+import static com.sekhmet.sekhmetapi.service.UserService.ACCOUNT_USER_PROFIL_PICTURE;
+
+import com.amazonaws.services.s3.model.S3Object;
 import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.repository.UserRepository;
 import com.sekhmet.sekhmetapi.security.SecurityUtils;
@@ -12,20 +15,31 @@ import com.sekhmet.sekhmetapi.web.rest.errors.InvalidPasswordException;
 import com.sekhmet.sekhmetapi.web.rest.errors.LoginAlreadyUsedException;
 import com.sekhmet.sekhmetapi.web.rest.vm.KeyAndPasswordVM;
 import com.sekhmet.sekhmetapi.web.rest.vm.ManagedUserVM;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import tech.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing the current user's account.
  */
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class AccountResource {
 
     static class AccountResourceException extends RuntimeException {
@@ -42,12 +56,6 @@ public class AccountResource {
     private final UserService userService;
 
     private final MailService mailService;
-
-    public AccountResource(UserRepository userRepository, UserService userService, MailService mailService) {
-        this.userRepository = userRepository;
-        this.userService = userService;
-        this.mailService = mailService;
-    }
 
     /**
      * {@code POST  /register} : register the user.
@@ -134,6 +142,45 @@ public class AccountResource {
             userDTO.getLangKey(),
             userDTO.getImageUrl()
         );
+    }
+
+    /**
+     * {@code POST  /account/user-picture} : add user profil picture.
+     *
+     * @param file the current user information.
+     * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already used.
+     * @throws RuntimeException          {@code 500 (Internal Server Error)} if the user login wasn't found.
+     */
+    @PostMapping("/" + ACCOUNT_USER_PROFIL_PICTURE)
+    public AdminUserDTO addUserProfil(@RequestParam MultipartFile file) {
+        String userLogin = SecurityUtils
+            .getCurrentUserLogin()
+            .orElseThrow(() -> new AccountResource.AccountResourceException("Current user login not found"));
+        Optional<User> user = userService.addProfilePicture(userLogin, file);
+        return user.map(AdminUserDTO::new).orElseThrow(() -> new AccountResourceException("User could not be found"));
+    }
+
+    /**
+     * {@code GET  /messages/:messageId/:fileType/:fileId} : get the file.
+     *
+     * @param fileId the id of the message media to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the message, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/" + ACCOUNT_USER_PROFIL_PICTURE + "/{fileId}")
+    public ResponseEntity<byte[]> getProfilPicture(@PathVariable String fileId) throws IOException {
+        log.debug("REST request to get Media : {}", fileId);
+
+        S3Object media = userService.getProfiPic(fileId);
+        try (InputStream in = media.getObjectContent()) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IOUtils.copy(in, baos);
+            byte[] fileBytes = baos.toByteArray();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaTypes(media.getObjectMetadata().getContentType()).get(0));
+            headers.setContentLength(fileBytes.length);
+            return ResponseUtil.wrapOrNotFound(Optional.of(fileBytes), headers);
+        }
     }
 
     /**
