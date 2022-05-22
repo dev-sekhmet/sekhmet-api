@@ -146,10 +146,14 @@ public class TwilioConversationService {
     ) {
         return Map.of(
             user.getId().toString(),
-            Map.of("friendlyName", currentUser.getFirstName() + " " + currentUser.getLastName(), "imageUrl", currentUser.getImageUrl()),
+            Map.of("friendlyName", currentUser.getFirstName() + " " + currentUser.getLastName(), "imageUrl", getImageUrl(currentUser)),
             currentUser.getId().toString(),
-            Map.of("friendlyName", user.getFirstName() + " " + user.getLastName(), "imageUrl", user.getImageUrl())
+            Map.of("friendlyName", user.getFirstName() + " " + user.getLastName(), "imageUrl", getImageUrl(user))
         );
+    }
+
+    private String getImageUrl(com.sekhmet.sekhmetapi.domain.User currentUser) {
+        return currentUser.getImageUrl() != null ? currentUser.getImageUrl() : "";
     }
 
     private String buildDualConversationId(UUID id, UUID currentUser) {
