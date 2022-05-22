@@ -390,7 +390,9 @@ public class UserService {
             String key = buildKey(u);
             S3Service.PutResult putResult = s3Service.putMedia(key, file);
             u.setImageUrl(putResult.getKey());
-            return userRepository.save(u);
+            User saveU = userRepository.save(u);
+            this.clearUserCaches(saveU);
+            return saveU;
         });
     }
 
