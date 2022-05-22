@@ -166,11 +166,11 @@ public class AccountResource {
      * @param fileId the id of the message media to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the message, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/" + ACCOUNT_USER_PROFIL_PICTURE + "/{fileId}")
-    public ResponseEntity<byte[]> getProfilPicture(@PathVariable String fileId) throws IOException {
-        log.debug("REST request to get Media : {}", fileId);
+    @GetMapping("/" + ACCOUNT_USER_PROFIL_PICTURE + "/{userId}/{fileId}")
+    public ResponseEntity<byte[]> getProfilPicture(@PathVariable String fileId, @PathVariable String userId) throws IOException {
+        log.debug("REST request to get Media : {} - {}", userId, fileId);
 
-        S3Object media = userService.getProfiPic(fileId);
+        S3Object media = userService.getProfiPic(userId, fileId);
         try (InputStream in = media.getObjectContent()) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             IOUtils.copy(in, baos);

@@ -58,6 +58,14 @@ public class S3Service {
         return amazonS3.getObject(bucket, key);
     }
 
+    public void deleteObject(String key) {
+        if (amazonS3.doesObjectExist(bucket, key)) {
+            amazonS3.deleteObject(bucket, key);
+        } else {
+            log.warn("Cannot delete Object {} does not exist on S3", key);
+        }
+    }
+
     public static class PutResult {
 
         private String key;

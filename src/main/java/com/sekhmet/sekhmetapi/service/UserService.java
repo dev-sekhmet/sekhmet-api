@@ -39,7 +39,7 @@ public class UserService {
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
     public static final String ACCOUNT_USER_PROFIL_PICTURE = "account/user-profil-picture";
-    public static final String KEY_FORMAT = ACCOUNT_USER_PROFIL_PICTURE + "/%s";
+    public static final String KEY_FORMAT = ACCOUNT_USER_PROFIL_PICTURE + "/%s/%s";
 
     private final UserRepository userRepository;
 
@@ -387,8 +387,9 @@ public class UserService {
     public Optional<User> addProfilePicture(String userLogin, MultipartFile file) {
         Optional<User> user = userRepository.findOneByLogin(userLogin);
         return user.map(u -> {
-            String key = buildKey(u);
+            String key = buildMediaKey(u);
             S3Service.PutResult putResult = s3Service.putMedia(key, file);
+            s3Service.deleteObject(u.getImageUrl());
             u.setImageUrl(putResult.getKey());
             User saveU = userRepository.save(u);
             this.clearUserCaches(saveU);
@@ -396,12 +397,16 @@ public class UserService {
         });
     }
 
-    private String buildKey(User u) {
-        return String.format(KEY_FORMAT, u.getId().toString());
+    private String buildMediaKey(String userId, String fileId) {
+        return String.format(KEY_FORMAT, userId, fileId);
     }
 
-    public S3Object getProfiPic(String fileId) {
-        String key = String.format(KEY_FORMAT, fileId);
+    private String buildMediaKey(User u) {
+        return buildMediaKey(u.getId().toString(), RandomUtil.generateRandomAlphanumericString());
+    }
+
+    public S3Object getProfiPic(String userId, String fileId) {
+        String key = buildMediaKey(userId, fileId);
         return s3Service.getMedia(key);
     }
 }
