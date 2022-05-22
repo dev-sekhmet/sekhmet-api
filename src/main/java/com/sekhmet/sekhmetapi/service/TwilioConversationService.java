@@ -9,7 +9,6 @@ import com.twilio.jwt.accesstoken.ChatGrant;
 import com.twilio.rest.conversations.v1.Conversation;
 import com.twilio.rest.conversations.v1.User;
 import com.twilio.rest.conversations.v1.conversation.Participant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,7 +53,9 @@ public class TwilioConversationService {
                 } catch (ApiException ex) {
                     if (ex.getMessage().contains("not found")) {
                         try {
-                            user.setImageUrl("https://i.pravatar.cc/300");
+                            if (user.getImageUrl() == null) {
+                                user.setImageUrl("https://i.pravatar.cc/300");
+                            }
                             userConTwilio =
                                 User
                                     .creator(user.getId().toString())
@@ -112,7 +113,7 @@ public class TwilioConversationService {
         if (userOptional.isPresent() && currentUserOptional.isPresent()) {
             com.sekhmet.sekhmetapi.domain.User user = userOptional.get();
             com.sekhmet.sekhmetapi.domain.User currentUser = currentUserOptional.get();
-            Map<String, String> conversationNames = buildConversationNames(user, currentUser);
+            Map<String, Object> conversationNames = buildConversationAttributes(user, currentUser);
             try {
                 conversation =
                     Conversation
@@ -139,14 +140,16 @@ public class TwilioConversationService {
         return conversation;
     }
 
-    private Map<String, String> buildConversationNames(
+    private Map<String, Object> buildConversationAttributes(
         com.sekhmet.sekhmetapi.domain.User user,
         com.sekhmet.sekhmetapi.domain.User currentUser
     ) {
-        HashMap<String, String> convNames = new HashMap<>();
-        convNames.put(user.getId().toString(), currentUser.getFirstName() + " " + currentUser.getLastName());
-        convNames.put(currentUser.getId().toString(), user.getFirstName() + " " + user.getLastName());
-        return convNames;
+        return Map.of(
+            user.getId().toString(),
+            Map.of("friendlyName", currentUser.getFirstName() + " " + currentUser.getLastName(), "imageUrl", currentUser.getImageUrl()),
+            currentUser.getId().toString(),
+            Map.of("friendlyName", user.getFirstName() + " " + user.getLastName(), "imageUrl", user.getImageUrl())
+        );
     }
 
     private String buildDualConversationId(UUID id, UUID currentUser) {
