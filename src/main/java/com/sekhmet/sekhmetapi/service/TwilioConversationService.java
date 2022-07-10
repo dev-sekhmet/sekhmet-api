@@ -108,10 +108,20 @@ public class TwilioConversationService {
 
         if (conversation != null) {
             Conversation finalConversation = conversation;
+
+            Participant
+                .creator(finalConversation.getSid())
+                .setIdentity(currentUserId.toString())
+                .setRoleSid(smsProps.getChannelAdminSid())
+                .create();
             conversationDto
                 .getIds()
                 .forEach(id -> {
-                    Participant participant = Participant.creator(finalConversation.getSid()).setIdentity(id.toString()).create();
+                    var participant = Participant
+                        .creator(finalConversation.getSid())
+                        .setIdentity(id.toString())
+                        .setRoleSid(smsProps.getChannelUserSid())
+                        .create();
                     log.info("Conv twilio user {} added to conversation {}", participant.getIdentity(), finalConversation.getSid());
                 });
             log.info("twilio Conversation created Successfully: {} - {}", conversation.getUniqueName(), conversation.getFriendlyName());

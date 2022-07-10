@@ -149,4 +149,6 @@ application:
       api-sid:
       verify-sid:
       conversation-sid:
+      channel-admin-sid:
+      channel-user-sid:
     password-phone-number-secret:
