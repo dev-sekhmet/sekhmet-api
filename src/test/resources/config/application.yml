@@ -15,8 +15,8 @@
 
 spring:
   profiles:
-    # Uncomment the following line to enable tests against production database type rather than H2, using Testcontainers
-    #active: testcontainers
+  # Uncomment the following line to enable tests against production database type rather than H2, using Testcontainers
+  #active: testcontainers
   application:
     name: sekhmetApi
   datasource:
@@ -119,4 +119,6 @@ application:
       account-sid:
       auth-token:
       verify-sid:
+      channel-admin-sid:
+      channel-user-sid:
     password-phone-number-secret:

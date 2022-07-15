@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sekhmet.sekhmetapi.domain.User;
 import com.sekhmet.sekhmetapi.security.jwt.JWTFilter;
 import com.sekhmet.sekhmetapi.security.jwt.TokenProvider;
-import com.sekhmet.sekhmetapi.service.ConversationService;
+import com.sekhmet.sekhmetapi.service.TwilioConversationService;
 import com.sekhmet.sekhmetapi.service.TwilioService;
 import com.sekhmet.sekhmetapi.service.UserService;
 import com.sekhmet.sekhmetapi.service.dto.sms.CheckPhoneVerificationRequest;
@@ -15,6 +15,7 @@ import com.sekhmet.sekhmetapi.web.rest.vm.LoginVM;
 import java.util.Optional;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 @AllArgsConstructor
+@Slf4j
 public class UserJWTController {
 
     private static final String ENTITY_NAME = "user";
@@ -37,7 +39,7 @@ public class UserJWTController {
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final TwilioService smsService;
-    private final ConversationService conversationService;
+    private final TwilioConversationService conversationService;
     private final UserService userService;
 
     @PostMapping("/authenticate")
@@ -93,6 +95,17 @@ public class UserJWTController {
             );
         }
 
+        return getJwtTokenResponseEntity(request);
+    }
+
+    /**
+     * Login or signup via phone number
+     *
+     * @return
+     */
+    @GetMapping("/refresh-twilio-token")
+    public ResponseEntity<JWTToken> refreshTwilioToken(CheckPhoneVerificationRequest request) {
+        log.info("Refresh twilio token request: {}", request);
         return getJwtTokenResponseEntity(request);
     }
 

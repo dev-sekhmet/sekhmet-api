@@ -72,6 +72,8 @@ public class ApplicationProperties {
             private String apiSecret;
             private String apiSid;
             private String conversationSid;
+            private String channelAdminSid;
+            private String channelUserSid;
         }
     }
 }
