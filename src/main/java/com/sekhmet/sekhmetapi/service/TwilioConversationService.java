@@ -55,29 +55,30 @@ public class TwilioConversationService {
                     log.info("Twilio user {} - {} Already exists", userConTwilio.getIdentity(), userConTwilio.getFriendlyName());
                 } catch (ApiException ex) {
                     if (ex.getMessage().contains("not found")) {
-                        try {
-                            if (user.getImageUrl() == null) {
-                                user.setImageUrl("https://i.pravatar.cc/300");
-                            }
-                            userConTwilio =
-                                User
-                                    .creator(user.getId().toString())
-                                    .setFriendlyName(user.getFirstName() + " " + user.getLastName())
-                                    .setAttributes(new ObjectMapper().writeValueAsString(user))
-                                    .create();
-                            log.info(
-                                "Conv twilio user created Sucessfully: {} - {}",
-                                userConTwilio.getIdentity(),
-                                userConTwilio.getFriendlyName()
-                            );
-                        } catch (JsonProcessingException e) {
-                            log.info("Could not parse twilio attributs");
-                        }
+                        createTwilioUser(user);
                     } else {
                         throw ex;
                     }
                 }
             });
+    }
+
+    private void createTwilioUser(com.sekhmet.sekhmetapi.domain.User user) {
+        User userConTwilio;
+        try {
+            if (user.getImageUrl() == null) {
+                user.setImageUrl("https://i.pravatar.cc/300");
+            }
+            userConTwilio =
+                User
+                    .creator(user.getId().toString())
+                    .setFriendlyName(user.getFirstName() + " " + user.getLastName())
+                    .setAttributes(new ObjectMapper().writeValueAsString(user))
+                    .create();
+            log.info("Conv twilio user created Sucessfully: {} - {}", userConTwilio.getIdentity(), userConTwilio.getFriendlyName());
+        } catch (JsonProcessingException e) {
+            log.info("Could not parse twilio attributs");
+        }
     }
 
     private boolean isDual(List<UUID> ids) {
