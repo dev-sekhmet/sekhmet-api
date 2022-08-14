@@ -3,6 +3,7 @@ package com.sekhmet.sekhmetapi.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sekhmet.sekhmetapi.config.ApplicationProperties;
+import com.sekhmet.sekhmetapi.domain.enumeration.TwilioRole;
 import com.sekhmet.sekhmetapi.service.dto.ConversationDto;
 import com.twilio.exception.ApiException;
 import com.twilio.jwt.accesstoken.AccessToken;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -136,13 +138,15 @@ public class TwilioConversationService {
 
         if (conversation != null) {
             Conversation finalConversation = conversation;
-            createParticipant(currentUser, conversation, smsProps.getChannelAdminSid());
+            createParticipant(currentUser, conversation, Pair.of(TwilioRole.CHANNEL_ADMIN, smsProps.getChannelAdminSid()));
             conversationDto
                 .getIds()
                 .forEach(id -> {
                     var participant = userService
                         .getUserById(id)
-                        .map(user -> createParticipant(user, finalConversation, smsProps.getChannelUserSid()));
+                        .map(user ->
+                            createParticipant(user, finalConversation, Pair.of(TwilioRole.CHANNEL_USER, smsProps.getChannelUserSid()))
+                        );
                     if (participant.isPresent()) {
                         log.info(
                             "Conv twilio user {} added to conversation {}",
@@ -160,13 +164,21 @@ public class TwilioConversationService {
         return Optional.ofNullable(conversation);
     }
 
-    private Participant createParticipant(com.sekhmet.sekhmetapi.domain.User currentUser, Conversation finalConversation, String roleSid) {
+    private Participant createParticipant(
+        com.sekhmet.sekhmetapi.domain.User currentUser,
+        Conversation finalConversation,
+        Pair<TwilioRole, String> role
+    ) {
         try {
             return Participant
                 .creator(finalConversation.getSid())
                 .setIdentity(currentUser.getId().toString())
-                .setAttributes(objectMapper.writeValueAsString(currentUser))
-                .setRoleSid(roleSid)
+                .setAttributes(
+                    objectMapper.writeValueAsString(
+                        Map.of("participant", objectMapper.writeValueAsString(currentUser), "role", role.getKey().name())
+                    )
+                )
+                .setRoleSid(role.getValue())
                 .create();
         } catch (JsonProcessingException ex) {
             log.error("Could not parse twilio attributs: {}", ex.getMessage(), ex);
@@ -258,7 +270,5 @@ public class TwilioConversationService {
         return String.format(GROUP_CONVERSATION_FORMAT_ID, UUID.randomUUID().toString());
     }
 
-    public void deleter() {
-        Conversation.deleter("CH52cb0f47a1434304b92b6031d1078c0f").delete();
-    }
+    public void deleter() {}
 }
