@@ -24,11 +24,13 @@ public class TwilioConversationService {
     public static final String DUAL_CONVERSATION_FORMAT_ID = "DUAL_%s_%s";
     public static final String GROUP_CONVERSATION_FORMAT_ID = "GROUP_%s";
     private final UserService userService;
+    private final ObjectMapper objectMapper;
     private final ApplicationProperties.SmsProperties.TwilioPreperties smsProps;
 
     public TwilioConversationService(UserService userService, ApplicationProperties applicationProperties) {
         this.smsProps = applicationProperties.getSms().getTwilio();
         this.userService = userService;
+        objectMapper = new ObjectMapper();
     }
 
     public String generateAccessToken(UUID userId) {
@@ -53,6 +55,7 @@ public class TwilioConversationService {
                 try {
                     userConTwilio = User.fetcher(user.getId().toString()).fetch();
                     log.info("Twilio user {} - {} Already exists", userConTwilio.getIdentity(), userConTwilio.getFriendlyName());
+                    updateTwilioUser(user);
                 } catch (ApiException ex) {
                     if (ex.getMessage().contains("not found")) {
                         createTwilioUser(user);
@@ -73,9 +76,27 @@ public class TwilioConversationService {
                 User
                     .creator(user.getId().toString())
                     .setFriendlyName(user.getFirstName() + " " + user.getLastName())
-                    .setAttributes(new ObjectMapper().writeValueAsString(user))
+                    .setAttributes(objectMapper.writeValueAsString(user))
                     .create();
             log.info("Conv twilio user created Sucessfully: {} - {}", userConTwilio.getIdentity(), userConTwilio.getFriendlyName());
+        } catch (JsonProcessingException e) {
+            log.info("Could not parse twilio attributs");
+        }
+    }
+
+    private void updateTwilioUser(com.sekhmet.sekhmetapi.domain.User user) {
+        User userConTwilio;
+        try {
+            if (user.getImageUrl() == null) {
+                user.setImageUrl("https://i.pravatar.cc/300");
+            }
+            userConTwilio =
+                User
+                    .updater(user.getId().toString())
+                    .setFriendlyName(user.getFirstName() + " " + user.getLastName())
+                    .setAttributes(objectMapper.writeValueAsString(user))
+                    .update();
+            log.info("Conv twilio Updated created Sucessfully: {} - {}", userConTwilio.getIdentity(), userConTwilio.getFriendlyName());
         } catch (JsonProcessingException e) {
             log.info("Could not parse twilio attributs");
         }
@@ -85,22 +106,28 @@ public class TwilioConversationService {
         return ids.size() == 1; // current user id plus one other user id
     }
 
-    public Optional<Conversation> findOrCreateConversation(ConversationDto conversationDto, UUID currentUserId) {
+    public Optional<Conversation> findOrCreateConversation(
+        ConversationDto conversationDto,
+        com.sekhmet.sekhmetapi.domain.User currentUser
+    ) {
         if (isDual(conversationDto.getIds())) {
-            return findOrCreateConversationDual(conversationDto.getIds().get(0), currentUserId);
+            return findOrCreateConversationDual(conversationDto.getIds().get(0), currentUser);
         } else {
-            return createConversationGroup(conversationDto, currentUserId);
+            return createConversationGroup(conversationDto, currentUser);
         }
     }
 
-    private Optional<Conversation> createConversationGroup(ConversationDto conversationDto, UUID currentUserId) {
+    private Optional<Conversation> createConversationGroup(
+        ConversationDto conversationDto,
+        com.sekhmet.sekhmetapi.domain.User currentUser
+    ) {
         Conversation conversation = null;
         try {
             conversation =
                 Conversation
                     .creator()
                     .setUniqueName(buildGroupConversationId())
-                    .setAttributes(new ObjectMapper().writeValueAsString(Map.of("description", conversationDto.getDescription())))
+                    .setAttributes(objectMapper.writeValueAsString(Map.of("description", conversationDto.getDescription())))
                     .setFriendlyName(conversationDto.getFriendlyName())
                     .create();
         } catch (JsonProcessingException e) {
@@ -109,21 +136,22 @@ public class TwilioConversationService {
 
         if (conversation != null) {
             Conversation finalConversation = conversation;
-
-            Participant
-                .creator(finalConversation.getSid())
-                .setIdentity(currentUserId.toString())
-                .setRoleSid(smsProps.getChannelAdminSid())
-                .create();
+            createParticipant(currentUser, conversation, smsProps.getChannelAdminSid());
             conversationDto
                 .getIds()
                 .forEach(id -> {
-                    var participant = Participant
-                        .creator(finalConversation.getSid())
-                        .setIdentity(id.toString())
-                        .setRoleSid(smsProps.getChannelUserSid())
-                        .create();
-                    log.info("Conv twilio user {} added to conversation {}", participant.getIdentity(), finalConversation.getSid());
+                    var participant = userService
+                        .getUserById(id)
+                        .map(user -> createParticipant(user, finalConversation, smsProps.getChannelUserSid()));
+                    if (participant.isPresent()) {
+                        log.info(
+                            "Conv twilio user {} added to conversation {}",
+                            participant.get().getIdentity(),
+                            finalConversation.getSid()
+                        );
+                    } else {
+                        log.info("User {} already cannot be add to conversation {}", id, finalConversation.getSid());
+                    }
                 });
             log.info("twilio Conversation created Successfully: {} - {}", conversation.getUniqueName(), conversation.getFriendlyName());
         } else {
@@ -132,13 +160,27 @@ public class TwilioConversationService {
         return Optional.ofNullable(conversation);
     }
 
-    public Optional<Conversation> findOrCreateConversationDual(UUID userId, UUID currentUserId) {
-        Optional<Conversation> conversation = findConversationDual(userId, currentUserId);
+    private Participant createParticipant(com.sekhmet.sekhmetapi.domain.User currentUser, Conversation finalConversation, String roleSid) {
+        try {
+            return Participant
+                .creator(finalConversation.getSid())
+                .setIdentity(currentUser.getId().toString())
+                .setAttributes(objectMapper.writeValueAsString(currentUser))
+                .setRoleSid(roleSid)
+                .create();
+        } catch (JsonProcessingException ex) {
+            log.error("Could not parse twilio attributs: {}", ex.getMessage(), ex);
+        }
+        return null;
+    }
+
+    public Optional<Conversation> findOrCreateConversationDual(UUID userId, com.sekhmet.sekhmetapi.domain.User currentUser) {
+        Optional<Conversation> conversation = findConversationDual(userId, currentUser.getId());
         if (conversation.isEmpty()) {
-            conversation = findConversationDual(currentUserId, userId);
+            conversation = findConversationDual(currentUser.getId(), userId);
             if (conversation.isEmpty()) {
-                String pathSid = buildDualConversationId(userId, currentUserId);
-                return Optional.of(createConversationDual(userId, currentUserId, pathSid));
+                String pathSid = buildDualConversationId(userId, currentUser.getId());
+                return Optional.of(createConversationDual(userId, currentUser, pathSid));
             }
             return conversation;
         }
@@ -161,20 +203,18 @@ public class TwilioConversationService {
         }
     }
 
-    private Conversation createConversationDual(UUID userId, UUID currentUserId, String pathSid) {
+    private Conversation createConversationDual(UUID userId, com.sekhmet.sekhmetapi.domain.User currentUser, String pathSid) {
         Optional<com.sekhmet.sekhmetapi.domain.User> userOptional = userService.getUserById(userId);
-        Optional<com.sekhmet.sekhmetapi.domain.User> currentUserOptional = userService.getUserWithAuthorities();
         Conversation conversation = null;
-        if (userOptional.isPresent() && currentUserOptional.isPresent()) {
+        if (userOptional.isPresent()) {
             com.sekhmet.sekhmetapi.domain.User user = userOptional.get();
-            com.sekhmet.sekhmetapi.domain.User currentUser = currentUserOptional.get();
             Map<String, Object> conversationNames = buildConversationAttributes(user, currentUser);
             try {
                 conversation =
                     Conversation
                         .creator()
                         .setUniqueName(pathSid)
-                        .setAttributes(new ObjectMapper().writeValueAsString(conversationNames))
+                        .setAttributes(objectMapper.writeValueAsString(conversationNames))
                         .setFriendlyName(user.getFirstName() + "/" + currentUser.getFirstName())
                         .create();
             } catch (JsonProcessingException e) {
@@ -186,7 +226,7 @@ public class TwilioConversationService {
                 Participant.creator(conversation.getSid()).setIdentity(userId.toString()).create();
 
                 // create second User
-                Participant.creator(conversation.getSid()).setIdentity(currentUserId.toString()).create();
+                Participant.creator(conversation.getSid()).setIdentity(currentUser.getId().toString()).create();
                 log.info("twilio Conversation created Successfully: {} - {}", conversation.getUniqueName(), conversation.getFriendlyName());
             } else {
                 log.error("Could not create conversation");
@@ -199,16 +239,15 @@ public class TwilioConversationService {
         com.sekhmet.sekhmetapi.domain.User user,
         com.sekhmet.sekhmetapi.domain.User currentUser
     ) {
-        return Map.of(
-            user.getId().toString(),
-            Map.of("friendlyName", currentUser.getFirstName() + " " + currentUser.getLastName(), "imageUrl", getImageUrl(currentUser)),
-            currentUser.getId().toString(),
-            Map.of("friendlyName", user.getFirstName() + " " + user.getLastName(), "imageUrl", getImageUrl(user))
-        );
+        return Map.of(user.getId().toString(), buildUserAttributes(currentUser), currentUser.getId().toString(), buildUserAttributes(user));
     }
 
-    private String getImageUrl(com.sekhmet.sekhmetapi.domain.User currentUser) {
-        return currentUser.getImageUrl() != null ? currentUser.getImageUrl() : "";
+    private Map<String, String> buildUserAttributes(com.sekhmet.sekhmetapi.domain.User user) {
+        return Map.of("friendlyName", user.getFirstName() + " " + user.getLastName(), "imageUrl", getImageUrl(user));
+    }
+
+    private String getImageUrl(com.sekhmet.sekhmetapi.domain.User user) {
+        return user.getImageUrl() != null ? user.getImageUrl() : "";
     }
 
     private String buildDualConversationId(UUID id, UUID currentUser) {
@@ -217,5 +256,9 @@ public class TwilioConversationService {
 
     private String buildGroupConversationId() {
         return String.format(GROUP_CONVERSATION_FORMAT_ID, UUID.randomUUID().toString());
+    }
+
+    public void deleter() {
+        Conversation.deleter("CH52cb0f47a1434304b92b6031d1078c0f").delete();
     }
 }

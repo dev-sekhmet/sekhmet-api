@@ -33,7 +33,7 @@ public class TwilioConversationResource {
     public ResponseEntity<Conversation> findOrCreateConversationDual(@RequestBody ConversationDto conversationDto) {
         log.info("REST request to create or get Chat : {}", conversationDto);
         User user = userService.getUserWithAuthorities().get();
-        var conversationOptional = conversationUserService.findOrCreateConversation(conversationDto, user.getId());
+        var conversationOptional = conversationUserService.findOrCreateConversation(conversationDto, user);
         return ResponseUtil.wrapOrNotFound(conversationOptional);
     }
 }

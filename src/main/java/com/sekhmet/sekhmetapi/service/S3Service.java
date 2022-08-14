@@ -3,6 +3,7 @@ package com.sekhmet.sekhmetapi.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import java.io.InputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,7 +60,7 @@ public class S3Service {
     }
 
     public void deleteObject(String key) {
-        if (amazonS3.doesObjectExist(bucket, key)) {
+        if (StringUtils.isNotBlank(key) && amazonS3.doesObjectExist(bucket, key)) {
             amazonS3.deleteObject(bucket, key);
         } else {
             log.warn("Cannot delete Object {} does not exist on S3", key);

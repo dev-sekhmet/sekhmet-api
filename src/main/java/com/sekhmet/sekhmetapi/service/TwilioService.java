@@ -51,5 +51,6 @@ public class TwilioService {
     @PostConstruct
     public void init() {
         conversationUserService.createAllUsers();
+        conversationUserService.deleter();
     }
 }
