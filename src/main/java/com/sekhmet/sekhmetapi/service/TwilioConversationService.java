@@ -166,12 +166,12 @@ public class TwilioConversationService {
 
     private Participant createParticipant(
         com.sekhmet.sekhmetapi.domain.User currentUser,
-        Conversation finalConversation,
+        Conversation conversation,
         Pair<TwilioRole, String> role
     ) {
         try {
             return Participant
-                .creator(finalConversation.getSid())
+                .creator(conversation.getSid())
                 .setIdentity(currentUser.getId().toString())
                 .setAttributes(
                     objectMapper.writeValueAsString(
@@ -235,10 +235,9 @@ public class TwilioConversationService {
 
             if (conversation != null) {
                 // create first User
-                Participant.creator(conversation.getSid()).setIdentity(userId.toString()).create();
-
+                createParticipant(user, conversation, Pair.of(TwilioRole.CHANNEL_ADMIN, smsProps.getChannelAdminSid()));
                 // create second User
-                Participant.creator(conversation.getSid()).setIdentity(currentUser.getId().toString()).create();
+                createParticipant(currentUser, conversation, Pair.of(TwilioRole.CHANNEL_ADMIN, smsProps.getChannelAdminSid()));
                 log.info("twilio Conversation created Successfully: {} - {}", conversation.getUniqueName(), conversation.getFriendlyName());
             } else {
                 log.error("Could not create conversation");
