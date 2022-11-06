@@ -54,4 +54,4 @@ jobs:
         with:
           name: JarFile
           path: target/sekhmet*.jar
-          retention-days: 30
+          retention-days: 90
