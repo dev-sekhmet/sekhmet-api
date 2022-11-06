@@ -2,6 +2,10 @@
 
 This application sekhmetApi is using JHipster 7.4.1, you can find documentation and help
 at [https://www.jhipster.tech/documentation-archive/v7.4.1](https://www.jhipster.tech/documentation-archive/v7.4.1).
+this project uses github actions for ci
+3 types of build ise used
+build.yml to test and package code
+snapshots.yml to package and uplaod jar to artifactory (use snapshot_push label for your PR)
 
 ## Project Structure
 
