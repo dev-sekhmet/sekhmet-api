@@ -4,7 +4,7 @@
 
     <groupId>com.sekhmet.sekhmetapi</groupId>
     <artifactId>sekhmet-api</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.4-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Sekhmet Api</name>
     <description>Description for sekhmetApi</description>
@@ -20,11 +20,11 @@
     <distributionManagement>
         <snapshotRepository>
             <id>sekhmet-api-snapshots</id>
-            <url>https://sekhmet.jfrog.io/artifactory/sekhmet-api-libs-snapshot/</url>
+            <url>https://devsekhmet.jfrog.io/artifactory/sekhmet-api-libs-snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>sekhmet-api-releases</id>
-            <url>https://sekhmet.jfrog.io/artifactory/sekhmet-api-libs-release/</url>
+            <url>https://devsekhmet.jfrog.io/artifactory/sekhmet-api-libs-releases/</url>
         </repository>
     </distributionManagement>
 

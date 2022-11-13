@@ -10,7 +10,7 @@ jobs:
   pipeline:
     name: sekhmetApi Snapshot push
     runs-on: ubuntu-latest
-    if: "github.event.label.name == 'snapshot_push' && !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.pull_request.title, '[skip ci]') && !contains(github.event.pull_request.title, '[ci skip]')"
+    if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.pull_request.title, '[skip ci]') && !contains(github.event.pull_request.title, '[ci skip]')"
     timeout-minutes: 40
     env:
       NODE_VERSION: 14.18.1
@@ -54,4 +54,4 @@ jobs:
         with:
           name: JarFile
           path: target/sekhmet*.jar
-          retention-days: 30
+          retention-days: 90
