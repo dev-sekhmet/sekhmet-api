@@ -3,7 +3,7 @@ package com.sekhmet.sekhmetapi.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sekhmet.sekhmetapi.config.ApplicationProperties;
-import com.sekhmet.sekhmetapi.domain.ConversationTypeEnum;
+import com.sekhmet.sekhmetapi.domain.enumeration.ConversationTypeEnum;
 import com.sekhmet.sekhmetapi.domain.enumeration.TwilioRole;
 import com.sekhmet.sekhmetapi.service.dto.ConversationDto;
 import com.twilio.exception.ApiException;
@@ -18,6 +18,9 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,6 +29,7 @@ public class TwilioConversationService {
 
     public static final String DUAL_CONVERSATION_FORMAT_ID = "DUAL_%s_%s";
     public static final String GROUP_CONVERSATION_FORMAT_ID = "GROUP_%s";
+    public static final int PAGE_SIZE = 10000;
     private final UserService userService;
     private final ObjectMapper objectMapper;
     private final ApplicationProperties.SmsProperties.TwilioPreperties smsProps;
@@ -118,6 +122,16 @@ public class TwilioConversationService {
         } else {
             return createConversationGroup(conversationDto, currentUser);
         }
+    }
+
+    /**
+     * find all existing conversations
+     *
+     * @return list of conversations
+     */
+    public Page<Conversation> getAllConversations(Pageable pageable) {
+        com.twilio.base.Page<Conversation> firstPage = Conversation.reader().limit(PAGE_SIZE).pageSize(PAGE_SIZE).firstPage();
+        return new PageImpl<>(firstPage.getRecords(), pageable, PAGE_SIZE);
     }
 
     private Optional<Conversation> createConversationGroup(
@@ -279,4 +293,8 @@ public class TwilioConversationService {
     }
 
     public void deleter() {}
+
+    public void deleteConversation(String sid) {
+        Conversation.deleter(sid).delete();
+    }
 }
