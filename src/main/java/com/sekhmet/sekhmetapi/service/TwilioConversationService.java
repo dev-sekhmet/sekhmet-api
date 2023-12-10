@@ -3,6 +3,7 @@ package com.sekhmet.sekhmetapi.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sekhmet.sekhmetapi.config.ApplicationProperties;
+import com.sekhmet.sekhmetapi.domain.enumeration.ConversationTypeEnum;
 import com.sekhmet.sekhmetapi.domain.enumeration.TwilioRole;
 import com.sekhmet.sekhmetapi.service.dto.ConversationDto;
 import com.twilio.exception.ApiException;
@@ -17,6 +18,9 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,6 +29,7 @@ public class TwilioConversationService {
 
     public static final String DUAL_CONVERSATION_FORMAT_ID = "DUAL_%s_%s";
     public static final String GROUP_CONVERSATION_FORMAT_ID = "GROUP_%s";
+    public static final int PAGE_SIZE = 10000;
     private final UserService userService;
     private final ObjectMapper objectMapper;
     private final ApplicationProperties.SmsProperties.TwilioPreperties smsProps;
@@ -119,17 +124,28 @@ public class TwilioConversationService {
         }
     }
 
+    /**
+     * find all existing conversations
+     *
+     * @return list of conversations
+     */
+    public Page<Conversation> getAllConversations(Pageable pageable) {
+        com.twilio.base.Page<Conversation> firstPage = Conversation.reader().limit(PAGE_SIZE).pageSize(PAGE_SIZE).firstPage();
+        return new PageImpl<>(firstPage.getRecords(), pageable, PAGE_SIZE);
+    }
+
     private Optional<Conversation> createConversationGroup(
         ConversationDto conversationDto,
         com.sekhmet.sekhmetapi.domain.User currentUser
     ) {
         Conversation conversation = null;
         try {
+            var attributes = Map.of("description", conversationDto.getDescription(), "type", ConversationTypeEnum.GROUP);
             conversation =
                 Conversation
                     .creator()
                     .setUniqueName(buildGroupConversationId())
-                    .setAttributes(objectMapper.writeValueAsString(Map.of("description", conversationDto.getDescription())))
+                    .setAttributes(objectMapper.writeValueAsString(attributes))
                     .setFriendlyName(conversationDto.getFriendlyName())
                     .create();
         } catch (JsonProcessingException e) {
@@ -188,15 +204,15 @@ public class TwilioConversationService {
 
     public Optional<Conversation> findOrCreateConversationDual(UUID userId, com.sekhmet.sekhmetapi.domain.User currentUser) {
         Optional<Conversation> conversation = findConversationDual(userId, currentUser.getId());
-        if (conversation.isEmpty()) {
-            conversation = findConversationDual(currentUser.getId(), userId);
-            if (conversation.isEmpty()) {
-                String pathSid = buildDualConversationId(userId, currentUser.getId());
-                return Optional.of(createConversationDual(userId, currentUser, pathSid));
-            }
+        if (conversation.isPresent()) {
             return conversation;
         }
-        return conversation;
+        conversation = findConversationDual(currentUser.getId(), userId);
+        if (conversation.isPresent()) {
+            return conversation;
+        }
+        String pathSid = buildDualConversationId(userId, currentUser.getId());
+        return Optional.of(createConversationDual(userId, currentUser, pathSid));
     }
 
     public Optional<Conversation> findConversationDual(UUID userId, UUID currentUserId) {
@@ -250,7 +266,14 @@ public class TwilioConversationService {
         com.sekhmet.sekhmetapi.domain.User user,
         com.sekhmet.sekhmetapi.domain.User currentUser
     ) {
-        return Map.of(user.getId().toString(), buildUserAttributes(currentUser), currentUser.getId().toString(), buildUserAttributes(user));
+        return Map.of(
+            user.getId().toString(),
+            buildUserAttributes(currentUser),
+            currentUser.getId().toString(),
+            buildUserAttributes(user),
+            "type",
+            ConversationTypeEnum.DUAL
+        );
     }
 
     private Map<String, String> buildUserAttributes(com.sekhmet.sekhmetapi.domain.User user) {
@@ -266,8 +289,12 @@ public class TwilioConversationService {
     }
 
     private String buildGroupConversationId() {
-        return String.format(GROUP_CONVERSATION_FORMAT_ID, UUID.randomUUID().toString());
+        return String.format(GROUP_CONVERSATION_FORMAT_ID, UUID.randomUUID());
     }
 
     public void deleter() {}
+
+    public void deleteConversation(String sid) {
+        Conversation.deleter(sid).delete();
+    }
 }

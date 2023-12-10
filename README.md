@@ -5,7 +5,8 @@ at [https://www.jhipster.tech/documentation-archive/v7.4.1](https://www.jhipster
 this project uses github actions for ci
 3 types of build ise used
 build.yml to test and package code
-snapshots.yml to package and uplaod jar to artifactory (use snapshot_push label for your PR)
+snapshots.yml to package and upload jar to artifactoryon snapshot repo(trigger manually)
+releases.yml to package and upload jar to artifactory on release repo(trigger manually)
 
 ## Project Structure
 

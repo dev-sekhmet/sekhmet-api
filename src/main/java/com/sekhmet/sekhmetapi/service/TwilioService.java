@@ -50,7 +50,7 @@ public class TwilioService {
 
     @PostConstruct
     public void init() {
-        conversationUserService.createAllUsers();
+        // conversationUserService.createAllUsers();
         conversationUserService.deleter();
     }
 }
